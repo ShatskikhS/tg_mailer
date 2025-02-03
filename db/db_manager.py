@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from sqlalchemy import delete, update
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
@@ -82,10 +83,11 @@ class DatabaseManager:
                 options(selectinload(UserTable.role), selectinload(UserTable.mailing_groups)))
             return result.scalars().all()
 
-    async def get_all_users(self):
+    async def get_all_users(self) -> List[UserType]:
         async with self.async_session() as session:
             result = await session.execute(select(UserTable).options(selectinload(UserTable.role),
                                                                      selectinload(UserTable.mailing_groups)))
+            all_data = result.scalars().all()
             return result.scalars().all()
 
     async def update_user_role(self, user_id: int, new_role_id: int):

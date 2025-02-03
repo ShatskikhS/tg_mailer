@@ -14,3 +14,11 @@ DATABASE_URL = URL.create(
 )
 
 DEFAULT_ROLE = ChatRole(os.getenv("DEFAULT_ROLE_NAME"))
+DEVELOPER_IDS = [int(value) for value in os.getenv("DEVELOPER_IDS").split(",")]
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_ID = os.getenv("BOT_ID")
+
+COMMUNITY_NAME = os.getenv("COMMUNITY_NAME")
+
+DT_FORMAT = '%Y-%m-%d %H:%M:%S'

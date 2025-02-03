@@ -5,3 +5,4 @@ tmp.py
 data/
 
 /.env
+/test_db.py

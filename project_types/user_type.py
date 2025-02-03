@@ -4,13 +4,15 @@ from datetime import datetime
 from aiogram.types import User
 
 from project_types.enum_types import MailingGroup, ChatRole
+from config import DT_FORMAT
 
 
 class UserType:
     def __init__(self, user: Optional[User] = None,
                  is_subscribed: bool = True,
                  groups: List[MailingGroup] = [],
-                 role: ChatRole = ChatRole.APPLICANT):
+                 role: ChatRole = ChatRole.APPLICANT,
+                 last_update: datetime | None = None):
         if user is not None:
             self.id = user.id
             self.username = user.username if user.username else None
@@ -26,7 +28,7 @@ class UserType:
         self.is_subscribed = is_subscribed
         self.groups = groups
         self.role = role
-        self.last_update = datetime.now()
+        self.last_update = last_update or datetime.now()
 
     def full_name(self) -> str:
         if self.username:
@@ -50,6 +52,19 @@ class UserType:
                 'groups': self.groups,
                 'role': self.role,
                 'last_update': self.last_update}
+
+    def represent_user(self) -> str:
+        current_username = f'@{self.username}' if self.username else 'Не заданно'
+
+        result = (f'ID пользователя: {self.id}\n'
+                f'Username: {current_username}\n')
+        if self.first_name:
+            result += f'Имя: {self.first_name}\n'
+        if self.last_name:
+            result += f'Фамилия: {self.last_name}\n'
+        result += f'Дата подачи заявки: {self.last_update.strftime(DT_FORMAT)} CET (UTC+01:00).'
+
+        return result
 
     @classmethod
     def from_dict(cls, data: dict) -> 'UserType':
