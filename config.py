@@ -18,6 +18,7 @@ DEVELOPER_IDS = [int(value) for value in os.getenv("DEVELOPER_IDS").split(",")]
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 BOT_ID = os.getenv("BOT_ID")
+MESSAGE_MAX_LENGTH = os.getenv("MESSAGE_MAX_LENGTH")
 
 COMMUNITY_NAME = os.getenv("COMMUNITY_NAME")
 

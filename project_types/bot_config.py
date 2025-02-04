@@ -68,6 +68,16 @@ class BotConfig:
             raise ValueError(f"User {self.users[user_id].full_name()} is already in hte mailing group {group.value}")
         # TODO: add db method
 
+    async def change_subscriptions(self, user_id: int) -> bool:
+        if self.users[user_id].is_subscribed:
+            self.users[user_id].is_subscribed = False
+            # TODO: Add db method
+            return False
+        else:
+            self.users[user_id].is_subscribed = True
+            # TODO: Add db method
+            return True
+
     def get_ids_by_role(self, role: ChatRole) -> List[int]:
         result = []
         for user in self.users.values():
@@ -75,4 +85,8 @@ class BotConfig:
                 result.append(user.id)
         return result
 
+    def get_role_by_id(self, user_id: int) -> ChatRole:
+        return self.users[user_id].role
 
+    def ger_user_by_id(self, user_id: int) -> UserType:
+        return self.users[user_id]
