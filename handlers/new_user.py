@@ -6,7 +6,9 @@ from aiogram.types import Message, ReplyKeyboardRemove
 from filters.role_filters import NonUserFilter
 from fsms import NewUserStates as States
 from keboards import common_kb as common_kb
-from project_types import BotConfig, UserType, ChatRole
+from project_types.enum_types import ChatRole
+from project_types.user_type import UserType
+from project_types.bot_config import BotConfig
 from texts import new_user as texts
 
 

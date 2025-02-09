@@ -1,5 +1,5 @@
 from project_types import UserType
-from config import COMMUNITY_NAME
+from config_data import COMMUNITY_NAME
 
 
 HOME = 'Вы находитесь в домашнем меню. Для продолжения нажмите кнопку.'

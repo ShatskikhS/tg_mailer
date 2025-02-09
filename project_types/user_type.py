@@ -4,13 +4,13 @@ from datetime import datetime
 from aiogram.types import User
 
 from project_types.enum_types import MailingGroup, ChatRole
-from config import DT_FORMAT
+from config_data import DATETIME_FORMAT
 
 
 class UserType:
     def __init__(self, user: Optional[User] = None,
                  is_subscribed: bool = True,
-                 groups: List[MailingGroup] = [],
+                 groups: List[MailingGroup] | None = None,
                  role: ChatRole = ChatRole.APPLICANT,
                  last_update: datetime | None = None):
         if user is not None:
@@ -62,20 +62,33 @@ class UserType:
             result += f'Имя: {self.first_name}\n'
         if self.last_name:
             result += f'Фамилия: {self.last_name}\n'
-        result += f'Дата подачи заявки: {self.last_update.strftime(DT_FORMAT)} CET (UTC+01:00).'
-
+        result += f'Дата подачи заявки: {self.last_update.strftime(DATETIME_FORMAT)} CET (UTC+01:00).'
         return result
+
+    def to_db_params(self) -> dict:
+        return {
+            'user_id': self.id,
+            'user_name': self.username,
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'is_bot': self.is_bot,
+            'is_subscribed': self.is_subscribed,
+            'role_name': self.role.value,
+            'last_update': self.last_update,
+        }
 
     @classmethod
     def from_dict(cls, data: dict) -> 'UserType':
-        is_subscribed = data.get('is_subscribed', True)
-        groups = data.get('groups', [])
-        role = data.get('role', ChatRole.APPLICANT)
+        is_subscribed = bool(data.get('is_subscribed', True))
+        groups = data.get('groups')
+        role = data.get('role') or ChatRole(data.get('role_name')) or ChatRole.APPLICANT
         instance = cls(is_subscribed=is_subscribed, groups=groups, role=role)
-        instance.id = data['id']
-        instance.username = data.get('username')
+        user_id = data.get('user_id') or data.get('id')
+        if user_id is None:
+            raise ValueError('Missing user_id')
+        instance.id = user_id
+        instance.username = data.get('username') or data.get('user_name')
         instance.first_name = data.get('first_name')
         instance.last_name = data.get('last_name')
-        instance.is_bot = data.get('is_bot', False)
+        instance.is_bot = bool(data.get('is_bot', False))
         return instance
-

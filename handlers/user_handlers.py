@@ -4,7 +4,8 @@ from aiogram.types import Message
 
 from filters.role_filters import RoleFilter
 from keboards import user_kb as kb
-from project_types import ChatRole, BotConfig
+from project_types.enum_types import ChatRole
+from project_types.bot_config import BotConfig
 from texts import user_texts as texts
 from texts.text_methods import split_message
 from fsms import UserStates

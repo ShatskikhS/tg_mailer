@@ -1,5 +1,5 @@
-from config import COMMUNITY_NAME
-from project_types import UserType
+from config_data import COMMUNITY_NAME
+from project_types.user_type import UserType
 
 
 NEW_USER_GREETINGS = (f'Вас приветствует бот новостной рассылки {COMMUNITY_NAME}!'

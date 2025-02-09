@@ -3,13 +3,14 @@ from typing import List
 
 from sqlalchemy import ForeignKey, String, Boolean, DateTime, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
+from sqlalchemy.ext.asyncio import AsyncAttrs
 
 
-class Base(DeclarativeBase):
+class Base(DeclarativeBase, AsyncAttrs):
     pass
 
 
-class ChatRole(Base):
+class ChatRoleTable(Base):
     __tablename__ = "chat_role"
 
     role_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -17,7 +18,7 @@ class ChatRole(Base):
     role_description: Mapped[str] = mapped_column(Text, unique=True, nullable=False)
 
 
-class MailingGroup(Base):
+class MailingGroupTable(Base):
     __tablename__ = "mailing_group"
 
     group_id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
@@ -34,13 +35,13 @@ class UserTable(Base):
     last_name: Mapped[str] = mapped_column(String, nullable=True)
     is_bot: Mapped[bool] = mapped_column(Boolean, nullable=False)
     is_subscribed: Mapped[bool] = mapped_column(Boolean, nullable=False)
-    last_updated: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now())
+    last_update: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=datetime.now())
     role_id: Mapped[int] = mapped_column(ForeignKey("chat_role.role_id"), nullable=False)
-    role: Mapped[ChatRole] = relationship("ChatRole")
-    mailing_groups: Mapped[List[MailingGroup]] = relationship(secondary="user_mailing_group", cascade="all, delete-orphan")
+    role: Mapped[ChatRoleTable] = relationship("ChatRole")
+    mailing_groups: Mapped[List[MailingGroupTable]] = relationship(secondary="user_mailing_group", cascade="all, delete-orphan")
 
 
-class UserMailingGroup(Base):
+class UserMailingGroupTable(Base):
     __tablename__ = "user_mailing_group"
 
     user_id: Mapped[int] = mapped_column(ForeignKey("users.user_id"), primary_key=True)

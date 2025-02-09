@@ -1,27 +1,23 @@
 from typing import Dict, List
 
-from config import BOT_ID, DEVELOPER_IDS
-from db import DatabaseManager
-from project_types import ChatRole, MailingGroup, UserType
+from config_data import BOT_ID, DEVELOPER_IDS
+from db.raw_sql import RawSQL
+from project_types.enum_types import ChatRole, MailingGroup
+from project_types.user_type import UserType
 
 
 class BotConfig:
-    def __init__(self, db: DatabaseManager,
+    def __init__(self, db_manager: RawSQL,
                  developer_ids: List[int] = DEVELOPER_IDS,
                  bot_id: int = BOT_ID):
-        self.db = db
+        self.db_manager = db_manager
         self.users: Dict[int, UserType] | None = None
         self.bot_id: int = bot_id
         self.developer_ids: List[int] = developer_ids
 
-    async def read_users(self) -> None:
-        """
-        This method reads the users from the database and updates self.users.
-        This asynchronous method should always be run after the class instance is initialized.
-        :return None:
-        """
-        # TODO: Complete method.
-        pass
+    async def init_config(self):
+        await self.db_manager.init_db()
+        self.users = await self.db_manager.get_all_users()
 
     async def add_user(self, user: UserType) -> None:
         """
@@ -30,7 +26,9 @@ class BotConfig:
         :return None:
         """
         self.users[user.id] = user
-        # TODO: save user to db.
+        await self.db_manager.add_user(user)
+        for group in user.groups:
+            await self.db_manager.add_user_to_mailing_group(user_id=user.id,mailing_group=group)
 
     async def remove_user_by_id(self, user_id: int) -> None:
         """
@@ -38,8 +36,13 @@ class BotConfig:
         :param user_id:
         :return:
         """
-        self.users.pop(user_id, None)
-        # TODO: Remove user from db
+        if user_id not in self.users.keys():
+            raise ValueError('User_id not found')
+        current_user = self.users.get(user_id)
+        for group in current_user.groups:
+            await self.db_manager.remove_user_from_mailing_group(user_id=user_id,mailing_group=group)
+        await self.db_manager.remove_user(user_id=user_id)
+        self.users.pop(user_id)
 
     async def alter_user_role(self, user_id: int, new_role: ChatRole) -> None:
         """
@@ -49,9 +52,9 @@ class BotConfig:
         :return:
         """
         self.users[user_id].role = new_role
-        # TODO: add db method
+        await self.db_manager.update_user_role(user_id=user_id, new_role=new_role)
 
-    async def drop_users_group(self, user_id: int, group: MailingGroup) -> None:
+    async def drop_user_mailing_group(self, user_id: int, group: MailingGroup) -> None:
         """
         Removes the user from the mailing group updates self.users and db.
         :param user_id:
@@ -59,23 +62,23 @@ class BotConfig:
         :return:
         """
         self.users[user_id].groups.remove(group)
-        # TODO: add db method
+        await self.db_manager.remove_user_from_mailing_group(user_id=user_id,mailing_group=group)
 
-    async def add_users_group(self, user_id: int, group: MailingGroup) -> None:
+    async def add_user_to_mailing_group(self, user_id: int, group: MailingGroup) -> None:
         if group in self.users[user_id].groups:
             self.users[user_id].groups.append(group)
         else:
             raise ValueError(f"User {self.users[user_id].full_name()} is already in hte mailing group {group.value}")
-        # TODO: add db method
+        await self.db_manager.add_user_to_mailing_group(user_id=user_id,mailing_group=group)
 
     async def change_subscriptions(self, user_id: int) -> bool:
         if self.users[user_id].is_subscribed:
             self.users[user_id].is_subscribed = False
-            # TODO: Add db method
+            await self.db_manager.update_user_subscription(user_id=user_id, is_subscribed=False)
             return False
         else:
             self.users[user_id].is_subscribed = True
-            # TODO: Add db method
+            await self.db_manager.update_user_subscription(user_id=user_id, is_subscribed=True)
             return True
 
     def get_ids_by_role(self, role: ChatRole) -> List[int]:
