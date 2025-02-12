@@ -3,7 +3,8 @@ from typing import List
 from aiogram.filters import BaseFilter
 from aiogram.types import Message
 
-from project_types import BotConfig, ChatRole
+from project_types.bot_config import BotConfig
+from project_types.enum_types import ChatRole
 
 
 class NonUserFilter(BaseFilter):
@@ -20,4 +21,4 @@ class RoleFilter(BaseFilter):
         if isinstance(self.role, ChatRole):
             return self.role == user_role
         else:
-            return self.role in user_role
+            return user_role in self.role

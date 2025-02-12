@@ -25,12 +25,13 @@ from db.sql_clauses import (CREATE_MAILING_GROUPS_TABLE,
                             SELECT_USER_BY_ID,
                             REMOVE_USER_FROM_MAILING_GROUP,
                             DELETE_USER,
-                            UPDATE_USER_ROLE)
+                            UPDATE_USER_ROLE,
+                            SELECT_ALL_MAILING_GROUPS)
 
 
 class RawSQL:
     def __init__(self, url: str = DATABASE_URL):
-        self.engine = create_async_engine(url, echo=True)
+        self.engine = create_async_engine(url, echo=False)
 
     async def init_db (self) -> None:
         async with self.engine.begin() as conn:
@@ -120,3 +121,8 @@ class RawSQL:
     async def update_user_role(self, user_id: int, new_role: ChatRole) -> None:
         async with self.engine.begin() as conn:
             await conn.execute(UPDATE_USER_ROLE, {'user_id': user_id, 'role_name': new_role.value})
+
+    async def get_mailing_groups_descriptions(self):
+        async with self.engine.begin() as conn:
+            result = await conn.execute(SELECT_ALL_MAILING_GROUPS)
+        return result.mappings()

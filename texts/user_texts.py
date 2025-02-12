@@ -1,4 +1,4 @@
-from project_types import UserType
+from project_types.user_type import UserType
 from config_data import COMMUNITY_NAME
 
 

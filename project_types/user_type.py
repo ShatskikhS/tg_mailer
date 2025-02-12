@@ -26,7 +26,7 @@ class UserType:
             self.last_name = None
             self.is_bot = False
         self.is_subscribed = is_subscribed
-        self.groups = groups
+        self.groups = groups if groups is not None else []
         self.role = role
         self.last_update = last_update or datetime.now()
 
@@ -80,7 +80,7 @@ class UserType:
     @classmethod
     def from_dict(cls, data: dict) -> 'UserType':
         is_subscribed = bool(data.get('is_subscribed', True))
-        groups = data.get('groups')
+        groups = data.get('groups') or []
         role = data.get('role') or ChatRole(data.get('role_name')) or ChatRole.APPLICANT
         instance = cls(is_subscribed=is_subscribed, groups=groups, role=role)
         user_id = data.get('user_id') or data.get('id')

@@ -32,6 +32,6 @@ async def add_applicant(message: Message, state: FSMContext, bot: Bot, config: B
             await bot.send_message(chat_id=current_id, text=texts.new_app_notification(user=new_user))
     else:
         await config.add_user(user=UserType(user=message.from_user, role=ChatRole.DEVELOPER))
-        await message.answer(text=texts.NEW_DEVELOPER, reply_markup=common_kb.PROCEED_KB)
+        await message.answer(text=texts.NEW_DEVELOPER, reply_markup=common_kb.HOME_KB)
 
     await state.clear()

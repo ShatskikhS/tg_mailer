@@ -3,7 +3,8 @@ from aiogram.types import Message
 
 from filters.role_filters import RoleFilter
 from keboards.user_kb import get_hone_usr_kb
-from project_types import ChatRole, BotConfig
+from project_types.enum_types import ChatRole
+from project_types.bot_config import BotConfig
 
 router = Router()
 

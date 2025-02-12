@@ -7,3 +7,9 @@ class NewUserStates(StatesGroup):
 
 class UserStates(StatesGroup):
     Feedback = State()
+
+
+class MailingStates(StatesGroup):
+    MailingStart = State()
+    PoolOptions = State()
+    GetMessageText = State()

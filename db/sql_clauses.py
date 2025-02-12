@@ -76,3 +76,5 @@ REMOVE_USER_FROM_MAILING_GROUP = text("DELETE FROM users_mailing_groups WHERE us
 DELETE_USER = text("DELETE FROM users WHERE user_id = :user_id")
 
 UPDATE_USER_ROLE = text("UPDATE users SET role_name = :role_name WHERE user_id = :user_id")
+
+SELECT_ALL_MAILING_GROUPS = text("SELECT * FROM mailing_groups")

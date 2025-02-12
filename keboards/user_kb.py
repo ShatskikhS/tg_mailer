@@ -23,4 +23,4 @@ def get_hone_usr_kb(user: UserType) -> ReplyKeyboardMarkup:
                                          KeyboardButton(text='Справка')],
                                resize_keyboard=True,
                                one_time_keyboard=True,
-                               input_field_placeholder='Click a button to continue')
+                               input_field_placeholder='Click button to continue')

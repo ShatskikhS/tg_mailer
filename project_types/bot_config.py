@@ -28,7 +28,7 @@ class BotConfig:
         self.users[user.id] = user
         await self.db_manager.add_user(user)
         for group in user.groups:
-            await self.db_manager.add_user_to_mailing_group(user_id=user.id,mailing_group=group)
+            await self.db_manager.add_user_to_mailing_group(user_id=user.id, mailing_group=group)
 
     async def remove_user_by_id(self, user_id: int) -> None:
         """
@@ -88,8 +88,20 @@ class BotConfig:
                 result.append(user.id)
         return result
 
+    def get_ids_by_mailing_group(self, group: MailingGroup) -> List[int]:
+        result = []
+        for user in self.users.values():
+            if group in user.groups:
+                result.append(user.id)
+        return result
+
     def get_role_by_id(self, user_id: int) -> ChatRole:
         return self.users[user_id].role
 
     def ger_user_by_id(self, user_id: int) -> UserType:
         return self.users[user_id]
+
+    async def get_mailing_options(self) -> List[str]:
+        groups_data = await self.db_manager.get_mailing_groups_descriptions()
+        return [f"{group['group_name']}: {group['group_description']}" for group in groups_data]
+
