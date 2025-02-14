@@ -13,6 +13,7 @@ from handlers.admin_handlers import router as admin_router
 from handlers.mailing_handlers import router as mailing_router
 from handlers.developer_handlers import router as developer_router
 from handlers.join_requests_handlers import router as join_requests_router
+from handlers.user_mailing_groups_handlers import router as user_mailing_groups_router
 
 
 db_manager = RawSQL(DATABASE_URL)
@@ -25,7 +26,8 @@ dp.include_routers(new_user_router,
                    admin_router,
                    developer_router,
                    mailing_router,
-                   join_requests_router)
+                   join_requests_router,
+                   user_mailing_groups_router)
 
 async def main() -> None:
     logging.basicConfig(level=logging.DEBUG)

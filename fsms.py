@@ -19,3 +19,8 @@ class MailingStates(StatesGroup):
 
 class ApplicationsStates(StatesGroup):
     CurrentApplicant = State()
+
+
+class UserMailingGroupsStates(StatesGroup):
+    HomeState = State()
+    ChoseUsersState = State()
