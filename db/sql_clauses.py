@@ -28,6 +28,19 @@ CREATE_USERS_MAILING_GROUPS_TABLE = text('CREATE TABLE IF NOT EXISTS users_maili
                                          'FOREIGN KEY (user_id) REFERENCES users(user_id),'
                                          'FOREIGN KEY (group_name) REFERENCES mailing_groups(group_name))')
 
+CREATE_USER_INFOS_TABLE = text("CREATE TABLE IF NOT EXISTS user_infos ("
+                               "user_id INTEGER PRIMARY KEY, "
+                               "user_info TEXT, "
+                               "FOREIGN KEY (user_id) REFERENCES users(user_id))")
+
+ADD_USER_INFO = text('INSERT INTO user_infos(user_id, user_info) VALUES (:user_id, :user_info)')
+
+GET_USER_INFO = text("SELECT user_info FROM user_infos WHERE user_id = :user_id")
+
+UPDATE_USER_INFO = text("UPDATE user_infos SET user_info = :user_info WHERE user_id = :user_id ")
+
+DELETE_USER_INFO = text("DELETE FROM user_infos WHERE user_id = :user_id")
+
 SELECT_GROUPS_NUMBER = text("SELECT count(*) AS mailing_groups_number FROM mailing_groups")
 
 SELECT_ROLES_NUMBER = text("SELECT count(*) AS roles_number FROM chat_roles")

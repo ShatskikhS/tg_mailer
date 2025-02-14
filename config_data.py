@@ -11,7 +11,6 @@ DATABASE_URL = URL.create(
     database=os.getenv("DB_PATH")
 )
 
-DEFAULT_ROLE_NAME = os.getenv("DEFAULT_ROLE_NAME")
 DEVELOPER_IDS = [int(value) for value in os.getenv("DEVELOPER_IDS").split(",")]
 role_names = os.getenv("ROLE_NAMES").split(",")
 role_descriptions = os.getenv("ROLE_DESCRIPTIONS").split(",")
@@ -21,8 +20,7 @@ group_descriptions = os.getenv("GROUP_DESCRIPTIONS").split(",")
 DEFAULT_GROUPS = {group_names[i]: group_descriptions[i] if i < len(group_descriptions) else None for i in range(len(group_names))}
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
-BOT_ID = os.getenv("BOT_ID")
-MESSAGE_MAX_LENGTH = os.getenv("MESSAGE_MAX_LENGTH")
+MESSAGE_MAX_LENGTH = int(os.getenv("MESSAGE_MAX_LENGTH"))
 
 COMMUNITY_NAME = os.getenv("COMMUNITY_NAME")
 

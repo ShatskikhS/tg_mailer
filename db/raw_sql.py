@@ -26,7 +26,12 @@ from db.sql_clauses import (CREATE_MAILING_GROUPS_TABLE,
                             REMOVE_USER_FROM_MAILING_GROUP,
                             DELETE_USER,
                             UPDATE_USER_ROLE,
-                            SELECT_ALL_MAILING_GROUPS)
+                            SELECT_ALL_MAILING_GROUPS,
+                            CREATE_USER_INFOS_TABLE,
+                            ADD_USER_INFO,
+                            GET_USER_INFO,
+                            UPDATE_USER_INFO,
+                            DELETE_USER_INFO)
 
 
 class RawSQL:
@@ -39,11 +44,28 @@ class RawSQL:
             await conn.execute(CREATE_CHAT_ROLES_TABLE)
             await conn.execute(CREATE_USERS_TABLE)
             await conn.execute(CREATE_USERS_MAILING_GROUPS_TABLE)
+            await conn.execute(CREATE_USER_INFOS_TABLE)
             result = await conn.execute(SELECT_ROLES_NUMBER)
             if result.scalar() == 0:
                 for role in ChatRole:
                     await self.add_chat_role(role)
 
+    async def add_user_info(self, user_id: int, user_info: str) -> None:
+        async with self.engine.begin() as conn:
+            await conn.execute(ADD_USER_INFO, {'user_id': user_id, 'user_info': user_info})
+
+    async def get_user_info(self, user_id: int) -> str:
+        async with self.engine.begin() as conn:
+            result = await conn.execute(GET_USER_INFO, {'user_id': user_id})
+        return result.scalar()
+
+    async def update_user_info(self, user_id: int, user_info: str) -> None:
+        async with self.engine.begin() as conn:
+            await conn.execute(UPDATE_USER_INFO, {'user_id': user_id, 'user_info': user_info})
+
+    async def delete_user_info(self, user_id: int) -> None:
+        async with self.engine.begin() as conn:
+            await conn.execute(DELETE_USER_INFO, {'user_id': user_id})
 
     async def add_mailing_group(self, mailing_group: MailingGroup, group_description: str | None = None) -> None:
         async with self.engine.begin() as conn:

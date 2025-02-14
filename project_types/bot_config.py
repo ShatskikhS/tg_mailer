@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from config_data import BOT_ID, DEVELOPER_IDS
+from config_data import DEVELOPER_IDS
 from db.raw_sql import RawSQL
 from project_types.enum_types import ChatRole, MailingGroup
 from project_types.user_type import UserType
@@ -8,11 +8,9 @@ from project_types.user_type import UserType
 
 class BotConfig:
     def __init__(self, db_manager: RawSQL,
-                 developer_ids: List[int] = DEVELOPER_IDS,
-                 bot_id: int = BOT_ID):
+                 developer_ids: List[int] = DEVELOPER_IDS):
         self.db_manager = db_manager
         self.users: Dict[int, UserType] | None = None
-        self.bot_id: int = bot_id
         self.developer_ids: List[int] = developer_ids
 
     async def init_config(self):
@@ -104,4 +102,14 @@ class BotConfig:
     async def get_mailing_options(self) -> List[str]:
         groups_data = await self.db_manager.get_mailing_groups_descriptions()
         return [f"{group['group_name']}: {group['group_description']}" for group in groups_data]
+
+    async def get_user_info(self, user_id: int) -> str | None:
+        return await self.db_manager.get_user_info(user_id=user_id)
+
+    async def add_user_info(self, user_id: int, user_info: str) -> None:
+        await self.db_manager.add_user_info(user_id=user_id, user_info=user_info)
+
+    async def remove_user_info(self, user_id: int) -> None:
+        await self.db_manager.delete_user_info(user_id=user_id)
+
 

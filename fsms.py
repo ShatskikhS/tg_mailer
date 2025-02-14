@@ -3,6 +3,8 @@ from aiogram.fsm.state import StatesGroup, State
 
 class NewUserStates(StatesGroup):
     HomeState = State()
+    GetInfo = State()
+    ConfirmInfo = State()
 
 
 class UserStates(StatesGroup):
@@ -13,3 +15,7 @@ class MailingStates(StatesGroup):
     MailingStart = State()
     PoolOptions = State()
     GetMessageText = State()
+
+
+class ApplicationsStates(StatesGroup):
+    CurrentApplicant = State()
