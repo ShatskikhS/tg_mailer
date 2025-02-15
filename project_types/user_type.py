@@ -14,7 +14,7 @@ class UserType:
                  role: ChatRole = ChatRole.APPLICANT,
                  last_update: datetime | None = None):
         if user is not None:
-            self.id = user.id
+            self.id: int | None = user.id
             self.username = user.username if user.username else None
             self.first_name = user.first_name if user.first_name else None
             self.last_name = user.last_name if user.last_name else None
@@ -63,6 +63,20 @@ class UserType:
         if self.last_name:
             result += f'Фамилия: {self.last_name}\n'
         result += f'Дата подачи заявки: {self.last_update.strftime(DATETIME_FORMAT)} CET (UTC+01:00).'
+        return result
+
+    def represent_user_with_groups(self) -> str:
+        groups_list = [group.value for group in self.groups]
+        groups_str = ', '.join(groups_list) or 'Нет'
+        result =  (f'ID пользователя: {self.id}\n'
+                   f'Username: {self.username}\n')
+        if self.first_name:
+            result += f'Имя: {self.first_name}\n'
+        if self.last_name:
+            result += f'Фамилия: {self.last_name}\n'
+        result += f'Текущие группы: {groups_str}\n'
+        result += f'Last update: {self.last_update.strftime(DATETIME_FORMAT)} CET (UTC+01:00).'
+
         return result
 
     def to_db_params(self) -> dict:

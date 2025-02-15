@@ -1,4 +1,9 @@
+from typing import List
+
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+
+from project_types.user_type import UserType
+from project_types.enum_types import MailingGroup
 
 
 PROCEED_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Продолжить')]],
@@ -38,7 +43,8 @@ BACK_SEND_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Назад'),
                                    input_field_placeholder='Click button to continue')
 
 USER_GROUPS_HOME_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Все пользователи'),
-                                                     KeyboardButton(text='Пользователи по группам')],
+                                                     KeyboardButton(text='Пользователи группы'),
+                                                     KeyboardButton(text='Пользователи без группы')],
                                                     [KeyboardButton(text='Домой')]],
                                           resize_keyboard=True,
                                           one_time_keyboard=True,
@@ -60,3 +66,21 @@ def get_applicants_kb(back_button: bool = True, front_button: bool = True) -> Re
                                resize_keyboard=True,
                                one_time_keyboard=True,
                                input_field_placeholder='Click button to continue')
+
+def groups_home_kb(btn_names:List[str]) -> ReplyKeyboardMarkup:
+    line1 = [KeyboardButton(text=name) for name in btn_names]
+    return ReplyKeyboardMarkup(keyboard=[line1,
+                                         [KeyboardButton(text='Назад')],
+                                         [KeyboardButton(text='Домой')]],
+                               resize_keyboard=True,
+                               one_time_keyboard=True,
+                               input_field_placeholder='Click button to continue')
+
+
+def edit_groups_kb(user: UserType) -> ReplyKeyboardMarkup:
+    line1 = [KeyboardButton(text=f'Добавить в {group.value}') for group in MailingGroup if group not in user.groups]
+    line2 = [KeyboardButton(text=f'Удалить из {group.value}') for group in user.groups]
+    return ReplyKeyboardMarkup(keyboard=[line1,
+                                         line2,
+                                         [KeyboardButton(text='Назад')],
+                                         [KeyboardButton(text='Домой')]])

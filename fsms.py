@@ -24,3 +24,7 @@ class ApplicationsStates(StatesGroup):
 class UserMailingGroupsStates(StatesGroup):
     HomeState = State()
     ChoseUsersState = State()
+    ChoseGroupState = State()
+    ChoseNotGroupState = State()
+    ChoseOutOfGroupState = State()
+    UpdateGroupState = State()

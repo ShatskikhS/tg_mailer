@@ -63,11 +63,11 @@ class BotConfig:
         await self.db_manager.remove_user_from_mailing_group(user_id=user_id,mailing_group=group)
 
     async def add_user_to_mailing_group(self, user_id: int, group: MailingGroup) -> None:
-        if group in self.users[user_id].groups:
+        if group not in self.users[user_id].groups:
             self.users[user_id].groups.append(group)
         else:
-            raise ValueError(f"User {self.users[user_id].full_name()} is already in hte mailing group {group.value}")
-        await self.db_manager.add_user_to_mailing_group(user_id=user_id,mailing_group=group)
+            raise ValueError(f"User {self.users[user_id].full_name()} is already in the mailing group {group.value}")
+        await self.db_manager.add_user_to_mailing_group(user_id=user_id, mailing_group=group)
 
     async def change_subscriptions(self, user_id: int) -> bool:
         if self.users[user_id].is_subscribed:

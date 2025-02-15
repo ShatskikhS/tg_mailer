@@ -10,8 +10,8 @@ def get_users_groups_text(users: List[UserType]) -> str:
     result = ""
     for user in users:
         groups_list = [group.value for group in user.groups]
-        groups_string = ", ".join(groups_list)
-        result += f'id: {user.id}, user: {user.full_name()}, groups: {groups_string}\n'
+        groups_string = ", ".join(groups_list) or 'Нет групп'
+        result += f'id: {user.id}, user: {user.full_name()}, - {groups_string}\n'
     result = result.strip()
 
     return result
