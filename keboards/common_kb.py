@@ -24,6 +24,11 @@ BACK_HOME_TEXT_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Наза
                                    resize_keyboard=True,
                                    one_time_keyboard=True,
                                    input_field_placeholder="Type user's id here")
+Y_N_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Нет'), KeyboardButton(text='Да')]],
+                             resize_keyboard=True,
+                             one_time_keyboard=True,
+                             input_field_placeholder='Click the button to continue'
+                             )
 
 MAILING_START_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Отправить всем'),
                                                   KeyboardButton(text='Выбрать группы для рассылки')],

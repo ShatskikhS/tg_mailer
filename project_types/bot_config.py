@@ -1,4 +1,8 @@
 from typing import Dict, List
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
+
+import pandas as pd
 
 from config_data import DEVELOPER_IDS
 from db.raw_sql import RawSQL
@@ -112,4 +116,12 @@ class BotConfig:
     async def remove_user_info(self, user_id: int) -> None:
         await self.db_manager.delete_user_info(user_id=user_id)
 
+    def save_to_xlsx(self, path: str) -> None:
+        users_list = [user.to_dict() for user in self.users.values()]
+        df = pd.DataFrame.from_records(users_list)
+        df.to_excel(path, index=False)
 
+    async def async_save_to_excel(self, path: str) -> None:
+        loop = asyncio.get_event_loop()
+        with ThreadPoolExecutor() as pool:
+            await loop.run_in_executor(pool, self.save_to_xlsx, path)

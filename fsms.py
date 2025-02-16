@@ -28,3 +28,11 @@ class UserMailingGroupsStates(StatesGroup):
     ChoseNotGroupState = State()
     ChoseOutOfGroupState = State()
     UpdateGroupState = State()
+
+
+class DeveloperStates(StatesGroup):
+    UserManagement = State()
+    ChoseUserRoleState = State()
+    ChoseNewRolesState = State()
+    ChoseUserToDeleteState = State()
+    DeleteUserState = State()

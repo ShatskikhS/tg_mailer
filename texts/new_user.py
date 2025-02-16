@@ -26,7 +26,7 @@ APPLICANT_DECLINED = 'Ваша заявка отклонена'
 def new_app_notification(user: UserType, user_info: str) -> str:
     return (f'В бот поступила новая заявка\n'
             f'Данне заявителя:\n'
-            f'{user.represent_user()}\n'
+            f'{user.represent_applicant()}\n'
             f'Предоставленная информация о себе:\n'
             f'{user_info}')
 
@@ -34,6 +34,6 @@ def new_app_notification(user: UserType, user_info: str) -> str:
 def current_app_notification(user: UserType, user_info: str, user_number: int, total: int) -> str:
     return (f'Заявка №{user_number}/{total}.\n'
             f'Данные заявителя:\n'
-            f'{user.represent_user()}\n'
+            f'{user.represent_applicant()}\n'
             f'Предоставленная информация о себе:\n'
             f'{user_info}\n')

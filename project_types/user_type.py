@@ -43,17 +43,20 @@ class UserType:
         return str(self.id)
 
     def to_dict(self) -> dict:
-        return {'id': self.id,
+        result = {'id': self.id,
                 'username': self.username,
                 'first_name': self.first_name,
                 'last_name': self.last_name,
-                'is_bot': self.is_bot,
-                'is_subscribed': self.is_subscribed,
-                'groups': self.groups,
-                'role': self.role,
+                'is_bot': int(self.is_bot),
+                'is_subscribed': int(self.is_subscribed),
+                'role': self.role.value,
                 'last_update': self.last_update}
+        for group in MailingGroup:
+            result[group.value] = int(group in self.groups)
 
-    def represent_user(self) -> str:
+        return result
+
+    def represent_applicant(self) -> str:
         current_username = f'@{self.username}' if self.username else 'Не заданно'
 
         result = (f'ID пользователя: {self.id}\n'
@@ -65,15 +68,17 @@ class UserType:
         result += f'Дата подачи заявки: {self.last_update.strftime(DATETIME_FORMAT)} CET (UTC+01:00).'
         return result
 
-    def represent_user_with_groups(self) -> str:
+
+    def represent_user_full(self) -> str:
         groups_list = [group.value for group in self.groups]
         groups_str = ', '.join(groups_list) or 'Нет'
-        result =  (f'ID пользователя: {self.id}\n'
-                   f'Username: {self.username}\n')
+        result = (f'ID пользователя: {self.id}\n'
+                  f'Username: {self.username}\n')
         if self.first_name:
             result += f'Имя: {self.first_name}\n'
         if self.last_name:
             result += f'Фамилия: {self.last_name}\n'
+        result += f'Текущая роль: {self.role}\n'
         result += f'Текущие группы: {groups_str}\n'
         result += f'Last update: {self.last_update.strftime(DATETIME_FORMAT)} CET (UTC+01:00).'
 

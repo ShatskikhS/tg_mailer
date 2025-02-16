@@ -87,7 +87,7 @@ async def show_user_data(message: Message, state: FSMContext, config: BotConfig)
 
     current_user = config.users[user_id]
 
-    await message.answer(text=current_user.represent_user_with_groups())
+    await message.answer(text=current_user.represent_user_full())
     await message.answer(text='Выберете действие', reply_markup=edit_groups_kb(current_user))
     await state.update_data(user_id=user_id)
     await state.set_state(UserMailingGroupsStates.UpdateGroupState)
