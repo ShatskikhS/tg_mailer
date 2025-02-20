@@ -1,16 +1,16 @@
-from typing import List, Optional
+from typing import List, Dict
 from datetime import datetime
 
 from aiogram.types import User
 
-from project_types.enum_types import MailingGroup, ChatRole
+from project_types.enum_types import ChatRole
 from config_data import DATETIME_FORMAT
 
 
 class UserType:
-    def __init__(self, user: Optional[User] = None,
+    def __init__(self, user: User | None = None,
                  is_subscribed: bool = True,
-                 groups: List[MailingGroup] | None = None,
+                 groups: List[str] | None = None,
                  role: ChatRole = ChatRole.APPLICANT,
                  last_update: datetime | None = None):
         if user is not None:
@@ -42,7 +42,7 @@ class UserType:
             return self.last_name
         return str(self.id)
 
-    def to_dict(self) -> dict:
+    def to_dict(self, all_groups: Dict[str, str]) -> dict:
         result = {'id': self.id,
                 'username': self.username,
                 'first_name': self.first_name,
@@ -51,8 +51,8 @@ class UserType:
                 'is_subscribed': int(self.is_subscribed),
                 'role': self.role.value,
                 'last_update': self.last_update}
-        for group in MailingGroup:
-            result[group.value] = int(group in self.groups)
+        for group in all_groups.keys():
+            result[group] = int(group in self.groups)
 
         return result
 
@@ -70,8 +70,7 @@ class UserType:
 
 
     def represent_user_full(self) -> str:
-        groups_list = [group.value for group in self.groups]
-        groups_str = ', '.join(groups_list) or 'Нет'
+        groups_str = ', '.join(self.groups) or 'Нет'
         result = (f'ID пользователя: {self.id}\n'
                   f'Username: {self.username}\n')
         if self.first_name:

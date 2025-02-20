@@ -11,7 +11,6 @@ from keboards import common_kb as kb
 from texts import common_texts as c_texts
 from texts.text_methods import split_message
 from fsms import MailingStates
-from project_types.enum_types import MailingGroup
 
 
 router = Router()
@@ -26,10 +25,11 @@ async def mailing_start(message: Message, state: FSMContext):
 
 @router.message(F.text == 'Выбрать группы для рассылки', MailingStates.MailingStart)
 async def chose_groups(message: Message, state: FSMContext, config: BotConfig):
-    options = await config.get_mailing_options()
+    options = [f"{group_name}: {group_description}" for group_name, group_description in config.all_groups.items()]
     await message.answer_poll(question=c_texts.CHOSE_GROUPS,
                               allows_multiple_answers=True,
                               options=options,
+                              is_anonymous=False,
                               reply_markup=kb.HOME_KB)
     await state.update_data(options=options)
     await state.set_state(MailingStates.PoolOptions)
@@ -40,13 +40,12 @@ async def mailing_by_pool(poll_answer: PollAnswer, state: FSMContext, config: Bo
     data = await state.get_data()
     all_poll_options: List[str]  = data['options']
     mailing_options = poll_answer.option_ids
-    print(f'{mailing_options=}')
     per_mailing_ids = []
     mailing_groups = []
     for option in mailing_options:
         group_name = all_poll_options[option].split(':')[0]
-        mailing_groups.append(MailingGroup(group_name))
-        per_mailing_ids.extend(config.get_ids_by_mailing_group(MailingGroup(group_name)))
+        mailing_groups.append(group_name)
+        per_mailing_ids.extend(config.get_ids_by_mailing_group(group_name))
     per_mailing_ids = list(set(per_mailing_ids))
     mailing_ids = [current_id for current_id in per_mailing_ids if config.users[current_id].is_subscribed and not config.users[current_id].is_bot]
 
@@ -62,9 +61,8 @@ async def mailing_by_pool(poll_answer: PollAnswer, state: FSMContext, config: Bo
 async def mailing_all(message: Message, state: FSMContext, config: BotConfig):
     mailing_ids = [user.id for user in config.users.values() if user.is_subscribed and not user.is_bot and user.groups]
     await state.update_data(mailing_ids=mailing_ids)
-    mailing_groups = [group for group in MailingGroup]
-
-    await message.answer(text=c_texts.get_input_text(groups=mailing_groups, nuber_users=len(mailing_ids)),
+    await message.answer(text=c_texts.get_input_text(groups=list(config.all_groups.keys()),
+                                                     nuber_users=len(mailing_ids)),
                          reply_markup=kb.BACK_HOME_KB)
 
     await state.set_state(MailingStates.GetMessageText)

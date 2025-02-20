@@ -6,16 +6,18 @@ import pandas as pd
 
 from config_data import DEVELOPER_IDS
 from db.raw_sql import RawSQL
-from project_types.enum_types import ChatRole, MailingGroup
+from project_types.enum_types import ChatRole
 from project_types.user_type import UserType
 
 
 class BotConfig:
     def __init__(self, db_manager: RawSQL,
+                 all_groups: Dict[str, str],
                  developer_ids: List[int] = DEVELOPER_IDS):
         self.db_manager = db_manager
         self.users: Dict[int, UserType] | None = None
         self.developer_ids: List[int] = developer_ids
+        self.all_groups = all_groups
 
     async def init_config(self):
         await self.db_manager.init_db()
@@ -56,7 +58,15 @@ class BotConfig:
         self.users[user_id].role = new_role
         await self.db_manager.update_user_role(user_id=user_id, new_role=new_role)
 
-    async def drop_user_mailing_group(self, user_id: int, group: MailingGroup) -> None:
+    async def add_mailing_group(self, group_name: str, group_description: str | None = None) -> None:
+        self.all_groups[group_name] = group_description
+        await self.db_manager.add_mailing_group(group_name, group_description)
+
+    async def remove_mailing_group(self, group_name: str) -> None:
+        self.all_groups.pop(group_name)
+        await self.db_manager.delete_mailing_group(group_name)
+
+    async def drop_user_mailing_group(self, user_id: int, group: str) -> None:
         """
         Removes the user from the mailing group updates self.users and db.
         :param user_id:
@@ -64,13 +74,13 @@ class BotConfig:
         :return:
         """
         self.users[user_id].groups.remove(group)
-        await self.db_manager.remove_user_from_mailing_group(user_id=user_id,mailing_group=group)
+        await self.db_manager.remove_user_from_mailing_group(user_id=user_id, mailing_group=group)
 
-    async def add_user_to_mailing_group(self, user_id: int, group: MailingGroup) -> None:
+    async def add_user_to_mailing_group(self, user_id: int, group: str) -> None:
         if group not in self.users[user_id].groups:
             self.users[user_id].groups.append(group)
         else:
-            raise ValueError(f"User {self.users[user_id].full_name()} is already in the mailing group {group.value}")
+            raise ValueError(f"User {self.users[user_id].full_name()} is already in the mailing group {group}")
         await self.db_manager.add_user_to_mailing_group(user_id=user_id, mailing_group=group)
 
     async def change_subscriptions(self, user_id: int) -> bool:
@@ -90,7 +100,7 @@ class BotConfig:
                 result.append(user.id)
         return result
 
-    def get_ids_by_mailing_group(self, group: MailingGroup) -> List[int]:
+    def get_ids_by_mailing_group(self, group: str) -> List[int]:
         result = []
         for user in self.users.values():
             if group in user.groups:
@@ -103,10 +113,6 @@ class BotConfig:
     def ger_user_by_id(self, user_id: int) -> UserType:
         return self.users[user_id]
 
-    async def get_mailing_options(self) -> List[str]:
-        groups_data = await self.db_manager.get_mailing_groups_descriptions()
-        return [f"{group['group_name']}: {group['group_description']}" for group in groups_data]
-
     async def get_user_info(self, user_id: int) -> str | None:
         return await self.db_manager.get_user_info(user_id=user_id)
 
@@ -117,7 +123,7 @@ class BotConfig:
         await self.db_manager.delete_user_info(user_id=user_id)
 
     def save_to_xlsx(self, path: str) -> None:
-        users_list = [user.to_dict() for user in self.users.values()]
+        users_list = [user.to_dict(all_groups=self.all_groups) for user in self.users.values()]
         df = pd.DataFrame.from_records(users_list)
         df.to_excel(path, index=False)
 

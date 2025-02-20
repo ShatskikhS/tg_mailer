@@ -1,7 +1,5 @@
 from typing import List
 
-from project_types.enum_types import MailingGroup
-
 
 HOME = 'Вы находитесь в домашнем меню. Для продолжения нажмите кнопку.'
 
@@ -29,8 +27,8 @@ ID_IS_TEXT = 'Ошибка: Неверно введен ID пользовате�
 
 ID_NOT_IN_LIST = 'Ошибка: Неверно введен ID пользователя. ID пользователя должен присутствовать в списке'
 
-def get_input_text(groups: List[MailingGroup], nuber_users: int) -> str:
-    group_text = ', '.join([group.value for group in groups])
+def get_input_text(groups: List[str], nuber_users: int) -> str:
+    group_text = ', '.join(groups)
     return (f'Сообщение будет отправлено группам: {group_text}\n'
             f'Всего будет отправлено {nuber_users} сообщений.\n'
             f'Для начала рассылки отправьте текст как сообщению боту.')

@@ -8,11 +8,11 @@ from aiogram.types import Message, FSInputFile
 from filters.role_filters import RoleFilter
 from project_types.enum_types import ChatRole
 from project_types.bot_config import BotConfig
-from keboards.developer_kb import home_developer_kb, update_roles_kb, USER_MANAGEMENT_KB, HOME_LIST_USERS_KB
-from keboards.common_kb import BACK_HOME_TEXT_KB, BACK_HOME_KB, Y_N_KB, HOME_KB
+from keboards.developer_kb import home_developer_kb, update_roles_kb, USER_MANAGEMENT_KB, HOME_LIST_USERS_KB, MAILING_MANAGEMENT_KB, groups_to_delete_kb
+from keboards.common_kb import BACK_HOME_TEXT_KB, BACK_HOME_KB, Y_N_KB, HOME_KB, CONTINUE_BACK_HOME_KB
 from texts.text_methods import split_message
 from texts.common_texts import HOME, ID_IS_TEXT, ID_NOT_IN_LIST, CHOSE_USER_TEXT
-from texts.developer_texts import CHOSE_ACTION, users_list_text, CHOSE_NEW_ROLE, ROLE_HAS_UPDATED
+from texts.developer_texts import CHOSE_ACTION, users_list_text, CHOSE_NEW_ROLE, ROLE_HAS_UPDATED, mailing_management_text, INPUT_GROUP_NAME, input_group_description_text, confirm_new_group_data, confirm_group_delete_text
 from fsms import DeveloperStates
 from config_data import DATETIME_FORMAT
 
@@ -140,3 +140,88 @@ async def generate_xlsx(message: Message, config: BotConfig):
     await message.answer_document(document=inp_f)
 
     await aiofiles.os.remove(path)
+
+
+# ====================== Mailing management ======================
+
+@router.message(F.text == 'Управление группами рассылок', RoleFilter(ChatRole.DEVELOPER))
+@router.message(F.text == 'Назад', DeveloperStates.GetGroupNameState)
+@router.message(F.text == 'Назад', DeveloperStates.ChoseGroupToDeleteState)
+async def mailing_management(message: Message, state: FSMContext, config: BotConfig):
+    await message.answer(text=mailing_management_text(config=config), reply_markup=MAILING_MANAGEMENT_KB)
+    await state.set_state(DeveloperStates.MailingManagementState)
+
+
+@router.message(F.text == 'Добавить группу', DeveloperStates.MailingManagementState)
+@router.message(F.text == 'Назад', DeveloperStates.GetGroupDescriptionState)
+async def add_new_mailing_group(message: Message, state: FSMContext):
+    await message.answer(text=INPUT_GROUP_NAME, reply_markup=BACK_HOME_TEXT_KB)
+    await state.set_state(DeveloperStates.GetGroupNameState)
+
+
+@router.message(DeveloperStates.GetGroupNameState)
+@router.message(F.text == 'Назад', DeveloperStates.AddGroupState)
+async def get_group_name(message: Message, state: FSMContext, config: BotConfig):
+    group_name = message.text.strip()
+    if group_name in config.all_groups.keys():
+        await message.answer(text='Такая группа уже существует. Введите новое имя',
+                             reply_markup=BACK_HOME_TEXT_KB)
+        return
+
+    await message.answer(text=input_group_description_text(group_name=group_name), reply_markup=BACK_HOME_TEXT_KB)
+    await state.update_data(group_name=group_name)
+    await state.set_state(DeveloperStates.GetGroupDescriptionState)
+
+
+@router.message(DeveloperStates.GetGroupDescriptionState)
+async def get_group_description(message: Message, state: FSMContext):
+    data = await state.get_data()
+    group_name = data['group_name']
+    group_description = message.text.strip()
+    await message.answer(text=confirm_new_group_data(group_name, group_description), reply_markup=CONTINUE_BACK_HOME_KB)
+    await state.update_data(group_description=group_description)
+    await state.set_state(DeveloperStates.AddGroupState)
+
+
+@router.message(F.text == 'Продолжить', DeveloperStates.AddGroupState)
+async def add_new_group(message: Message, state: FSMContext, config: BotConfig):
+    data = await state.get_data()
+    group_name = data['group_name']
+    group_description = data['group_description']
+    await config.add_mailing_group(group_name, group_description)
+    await message.answer(text='Группа успешно добавлена', reply_markup=HOME_KB)
+    await state.clear()
+
+
+@router.message(F.text == 'Удалить группу', DeveloperStates.MailingManagementState)
+@router.message(F.text == 'Назад', DeveloperStates.ConfirmGroupToDeleteState)
+async def print_groups_to_delete(message: Message, state: FSMContext, config: BotConfig):
+    await message.answer(text='\n'.join([f'{name}: {description} - {len(config.get_ids_by_mailing_group(name))} участников' for name, description in config.all_groups.items()]))
+    await message.answer(text='Выберете группу для удаления',
+                         reply_markup=groups_to_delete_kb(list(config.all_groups.keys())))
+    await state.set_state(DeveloperStates.ChoseGroupToDeleteState)
+
+
+@router.message(DeveloperStates.ChoseGroupToDeleteState)
+async def confirm_group_delete(message: Message, state: FSMContext, config: BotConfig):
+    group_name = message.text
+    ids = config.get_ids_by_mailing_group(group_name)
+    await message.answer(text=confirm_group_delete_text(group_name=group_name, users_number=len(ids)),
+                         reply_markup=CONTINUE_BACK_HOME_KB)
+    await state.update_data(group_name=group_name)
+    await state.set_state(DeveloperStates.ConfirmGroupToDeleteState)
+
+
+@router.message(F.text == 'Продолжить', DeveloperStates.ConfirmGroupToDeleteState)
+async def delete_mailing_group(message: Message, state: FSMContext, config: BotConfig):
+    data = await state.get_data()
+    group_name = data['group_name']
+    if group_name not in config.all_groups.keys():
+        await message.answer(text=f'Группа {group_name} не найдена.', reply_markup=HOME_KB)
+        return
+    group_ids = config.get_ids_by_mailing_group(group_name)
+    for c_id in group_ids:
+        await config.drop_user_mailing_group(user_id=c_id, group=group_name)
+    await config.remove_mailing_group(group_name)
+    await message.answer(text=f'Группа {group_name} успешно удалена.', reply_markup=HOME_KB)
+    await state.clear()

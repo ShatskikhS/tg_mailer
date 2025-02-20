@@ -9,8 +9,7 @@ def split_message(text: str, max_length: int = MESSAGE_MAX_LENGTH) -> List[str]:
 def get_users_groups_text(users: List[UserType]) -> str:
     result = ""
     for user in users:
-        groups_list = [group.value for group in user.groups]
-        groups_string = ", ".join(groups_list) or 'Нет групп'
+        groups_string = ", ".join(user.groups) or 'Нет групп'
         result += f'id: {user.id}, user: {user.full_name()}, - {groups_string}\n'
     result = result.strip()
 

@@ -1,11 +1,14 @@
+from typing import List
+
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from project_types.user_type import UserType
 from project_types.enum_types import ChatRole
 
 
 USER_MANAGEMENT_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Изменить роль пользователя'),
-                                                    KeyboardButton(text='Удалить пользователя'),
-                                                    KeyboardButton(text='Скачать xlsx таблицу')],
+                                                    KeyboardButton(text='Изменить группу пользователя'),
+                                                    KeyboardButton(text='Удалить пользователя')],
+                                                   [KeyboardButton(text='Скачать xlsx таблицу')],
                                                    [KeyboardButton(text='Домой')]],
                                          resize_keyboard=True,
                                          input_field_placeholder='Click button to continue')
@@ -15,6 +18,14 @@ HOME_LIST_USERS_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='К сп
                                          resize_keyboard=True,
                                          one_time_keyboard=True,
                                          input_field_placeholder='Click button to continue')
+
+MAILING_MANAGEMENT_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Удалить группу'),
+                                                       KeyboardButton(text='Добавить группу')],
+                                                      [KeyboardButton(text='Домой')]],
+                                            resize_keyboard=True,
+                                            one_time_keyboard=True,
+                                            input_field_placeholder='Click button to continue'
+                                            )
 
 
 def home_developer_kb(user:UserType) -> ReplyKeyboardMarkup:
@@ -39,3 +50,13 @@ def update_roles_kb(user: UserType) -> ReplyKeyboardMarkup:
                                          [KeyboardButton(text='Домой')]],
                                resize_keyboard=True,
                                input_field_placeholder='Click button to continue')
+
+
+def groups_to_delete_kb(group_names: List[str]) -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=name) for name in group_names],
+                                         [KeyboardButton(text='Назад')],
+                                         [KeyboardButton(text='Домой')]],
+                               resize_keyboard=True,
+                               one_time_keyboard=True,
+                               input_field_placeholder='Click button to continue'
+                               )

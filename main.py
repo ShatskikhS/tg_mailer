@@ -14,23 +14,25 @@ from handlers.mailing_handlers import router as mailing_router
 from handlers.developer_handlers import router as developer_router
 from handlers.join_requests_handlers import router as join_requests_router
 from handlers.user_mailing_groups_handlers import router as user_mailing_groups_router
+from handlers.subscriptions import router as subscriptions_router
 
-
-db_manager = RawSQL(DATABASE_URL)
-config = BotConfig(db_manager=db_manager)
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher(config=config)
-
-dp.include_routers(new_user_router,
-                   user_router,
-                   admin_router,
-                   developer_router,
-                   mailing_router,
-                   join_requests_router,
-                   user_mailing_groups_router)
 
 async def main() -> None:
     logging.basicConfig(level=logging.DEBUG)
+    db_manager = RawSQL(DATABASE_URL)
+    all_groups = await db_manager.get_all_mailing_groups()
+    config = BotConfig(db_manager=db_manager, all_groups=all_groups)
+    bot = Bot(token=BOT_TOKEN)
+    dp = Dispatcher(config=config)
+
+    dp.include_routers(new_user_router,
+                       user_router,
+                       admin_router,
+                       developer_router,
+                       mailing_router,
+                       join_requests_router,
+                       user_mailing_groups_router,
+                       subscriptions_router)
     await config.init_config()
     await dp.start_polling(bot)
 

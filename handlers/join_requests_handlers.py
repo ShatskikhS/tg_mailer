@@ -28,7 +28,7 @@ async def join_requests(message: Message, state: FSMContext, config: BotConfig, 
         state_data = await state.get_data()
         try:
             prev_user_number = state_data['prev_user_number']
-            prev_id = state_data['prev_id']
+            prev_id: int = state_data['prev_id']
             if message.text == 'Предыдущее':
                 user_number = prev_user_number - 1
             elif message.text == 'Следующее':
@@ -38,12 +38,14 @@ async def join_requests(message: Message, state: FSMContext, config: BotConfig, 
                 u_info = await config.get_user_info(user_id=prev_user_number)
                 if u_info is not None:
                     await config.remove_user_info(user_id=prev_user_number)
+                    applicant_ids.remove(prev_id)
                 await config.remove_user_by_id(user_id=prev_id)
                 await message.answer(text=APPLICANT_NOTICE_DECLINED)
                 await bot.send_message(chat_id=prev_id, text=APPLICANT_DECLINED)
             elif message.text == 'Одобрить':
                 user_number = prev_user_number
                 await config.alter_user_role(user_id=prev_id, new_role=ChatRole.USER)
+                applicant_ids.remove(prev_id)
                 await message.answer(text=APPLICANT_NOTICE_APPROVED)
                 await bot.send_message(chat_id=prev_id, text=APPLICANT_APPROVED, reply_markup=HOME_KB)
             else:
