@@ -8,6 +8,7 @@ from config_data import DEVELOPER_IDS
 from db.raw_sql import RawSQL
 from project_types.enum_types import ChatRole
 from project_types.user_type import UserType
+from project_types.membership_application import MembershipApplication
 
 
 class BotConfig:
@@ -19,7 +20,7 @@ class BotConfig:
         self.developer_ids: List[int] = developer_ids
         self.all_groups = all_groups
 
-    async def init_config(self):
+    async def init_config(self) -> None:
         await self.db_manager.init_db()
         self.users = await self.db_manager.get_all_users()
 
@@ -66,7 +67,7 @@ class BotConfig:
         self.all_groups.pop(group_name)
         await self.db_manager.delete_mailing_group(group_name)
 
-    async def drop_user_mailing_group(self, user_id: int, group: str) -> None:
+    async def remove_user_form_mailing_group(self, user_id: int, group: str) -> None:
         """
         Removes the user from the mailing group updates self.users and db.
         :param user_id:
@@ -79,9 +80,9 @@ class BotConfig:
     async def add_user_to_mailing_group(self, user_id: int, group: str) -> None:
         if group not in self.users[user_id].groups:
             self.users[user_id].groups.append(group)
+            await self.db_manager.add_user_to_mailing_group(user_id=user_id, mailing_group=group)
         else:
             raise ValueError(f"User {self.users[user_id].full_name()} is already in the mailing group {group}")
-        await self.db_manager.add_user_to_mailing_group(user_id=user_id, mailing_group=group)
 
     async def change_subscriptions(self, user_id: int) -> bool:
         if self.users[user_id].is_subscribed:
@@ -94,11 +95,7 @@ class BotConfig:
             return True
 
     def get_ids_by_role(self, role: ChatRole) -> List[int]:
-        result = []
-        for user in self.users.values():
-            if user.role == role:
-                result.append(user.id)
-        return result
+        return [user.id for user in self.users.values() if user.role == role]
 
     def get_ids_by_mailing_group(self, group: str) -> List[int]:
         result = []
@@ -116,11 +113,26 @@ class BotConfig:
     async def get_user_info(self, user_id: int) -> str | None:
         return await self.db_manager.get_user_info(user_id=user_id)
 
-    async def add_user_info(self, user_id: int, user_info: str) -> None:
-        await self.db_manager.add_user_info(user_id=user_id, user_info=user_info)
+    async def add_application(self, applicant_id: int, admin_ids_msgs: Dict[int, int], user_info: str | None = None) -> None:
+        await self.db_manager.add_applicant(applicant_id=applicant_id, user_info=user_info)
+        for admin_id, message_id in admin_ids_msgs.items():
+            await self.db_manager.add_notified_admin(applicant_id=applicant_id, admin_id=admin_id, message_id=message_id)
 
-    async def remove_user_info(self, user_id: int) -> None:
-        await self.db_manager.delete_user_info(user_id=user_id)
+    async def get_application(self, applicant_id: int) -> MembershipApplication:
+        row = await self.db_manager.get_application(applicant_id=applicant_id)
+        admin_ids = await self.db_manager.get_notified_admins(applicant_id=applicant_id)
+        return MembershipApplication(
+            applicant_id=row[1],
+            applicant_info=row[2],
+            acted_by=row[3],
+            decision_date=row[4],
+            admin_ids=admin_ids
+        )
+
+    async def close_application(self, applicant_id: int, admin_id) -> None:
+        await self.db_manager.close_application(applicant_id=applicant_id, admin_id=admin_id)
+        await self.db_manager.delete_notified_admins(applicant_id=applicant_id)
+
 
     def save_to_xlsx(self, path: str) -> None:
         users_list = [user.to_dict(all_groups=self.all_groups) for user in self.users.values()]

@@ -18,17 +18,17 @@ router = Router()
 
 
 @router.message(F.text == 'Управление пользовательскими группами', RoleFilter(ChatRole.ADMIN))
-@router.message(F.text == 'Изменить группу пользователя', DeveloperStates.UserManagement)
-@router.message(F.text == 'Назад', UserMailingGroupsStates.ChoseGroupState)
-@router.message(F.text == 'Назад', UserMailingGroupsStates.ChoseNotGroupState)
-@router.message(F.text == 'Назад', UserMailingGroupsStates.ChoseUsersState)
+@router.message(F.text == 'Изменить группу пользователя', DeveloperStates.user_management)
+@router.message(F.text == 'Назад', UserMailingGroupsStates.chose_group_state)
+@router.message(F.text == 'Назад', UserMailingGroupsStates.chose_not_group_state)
+@router.message(F.text == 'Назад', UserMailingGroupsStates.chose_users_state)
 async def user_groups_home(message: Message, state: FSMContext):
     await message.answer(text=USER_GROUPS_HOME_TEXT, reply_markup=USER_GROUPS_HOME_KB)
-    await state.set_state(UserMailingGroupsStates.HomeState)
+    await state.set_state(UserMailingGroupsStates.home_state)
 
 
-@router.message(F.text == 'Все пользователи', UserMailingGroupsStates.HomeState)
-@router.message(F.text == 'Пользователи без группы', UserMailingGroupsStates.HomeState)
+@router.message(F.text == 'Все пользователи', UserMailingGroupsStates.home_state)
+@router.message(F.text == 'Пользователи без группы', UserMailingGroupsStates.home_state)
 async def all_users(message: Message, state: FSMContext, config: BotConfig):
     if message.text == 'Все пользователи':
         users_list = [user for user in config.users.values() if user.role != ChatRole.APPLICANT]
@@ -38,27 +38,27 @@ async def all_users(message: Message, state: FSMContext, config: BotConfig):
     await message.answer(text=CHOSE_USER_TEXT, reply_markup=BACK_HOME_TEXT_KB)
 
     await state.update_data(users=users_list)
-    await state.set_state(UserMailingGroupsStates.ChoseUsersState)
+    await state.set_state(UserMailingGroupsStates.chose_users_state)
 
-@router.message(F.text == 'Пользователи группы', UserMailingGroupsStates.HomeState)
-@router.message(F.text == 'Пользователи не в группе', UserMailingGroupsStates.HomeState)
-@router.message(F.text == 'Назад', UserMailingGroupsStates.ChoseUsersState)
+@router.message(F.text == 'Пользователи группы', UserMailingGroupsStates.home_state)
+@router.message(F.text == 'Пользователи не в группе', UserMailingGroupsStates.home_state)
+@router.message(F.text == 'Назад', UserMailingGroupsStates.chose_users_state)
 async def chose_group(message: Message, state: FSMContext, config: BotConfig):
     line1_names = list(config.all_groups.keys())
     await message.answer(text='Выберите группу', reply_markup=groups_home_kb(line1_names))
     if message.text == 'Пользователи группы':
-        await state.set_state(UserMailingGroupsStates.ChoseGroupState)
+        await state.set_state(UserMailingGroupsStates.chose_group_state)
     else:
-        await state.set_state(UserMailingGroupsStates.ChoseNotGroupState)
+        await state.set_state(UserMailingGroupsStates.chose_not_group_state)
 
 
-@router.message(UserMailingGroupsStates.ChoseGroupState)
-@router.message(UserMailingGroupsStates.ChoseNotGroupState)
-@router.message(F.text == 'Назад', UserMailingGroupsStates.ChoseUsersState)
-@router.message(F.text == 'Назад', UserMailingGroupsStates.UpdateGroupState)
+@router.message(UserMailingGroupsStates.chose_group_state)
+@router.message(UserMailingGroupsStates.chose_not_group_state)
+@router.message(F.text == 'Назад', UserMailingGroupsStates.chose_users_state)
+@router.message(F.text == 'Назад', UserMailingGroupsStates.update_group_state)
 async def group_users(message: Message, state: FSMContext, config: BotConfig):
     current_state = await state.get_state()
-    if current_state == UserMailingGroupsStates.ChoseGroupState:
+    if current_state == UserMailingGroupsStates.chose_group_state:
         users_list = [user for user in config.users.values() if message.text in user.groups]
     else:
         users_list = [user for user in config.users.values() if message.text not in user.groups and user.role != ChatRole.APPLICANT]
@@ -66,10 +66,10 @@ async def group_users(message: Message, state: FSMContext, config: BotConfig):
     await message.answer(text=CHOSE_USER_TEXT, reply_markup=BACK_HOME_TEXT_KB)
 
     await state.update_data(users=users_list)
-    await state.set_state(UserMailingGroupsStates.ChoseUsersState)
+    await state.set_state(UserMailingGroupsStates.chose_users_state)
 
 
-@router.message(UserMailingGroupsStates.ChoseUsersState)
+@router.message(UserMailingGroupsStates.chose_users_state)
 async def show_user_data(message: Message, state: FSMContext, config: BotConfig):
     data = await state.get_data()
     users_list: List[UserType] = data.get('users')
@@ -93,10 +93,10 @@ async def show_user_data(message: Message, state: FSMContext, config: BotConfig)
     groups = list(config.all_groups.values())
     await message.answer(text='Выберете действие', reply_markup=edit_groups_kb(user=current_user, all_groups=groups))
     await state.update_data(user_id=user_id)
-    await state.set_state(UserMailingGroupsStates.UpdateGroupState)
+    await state.set_state(UserMailingGroupsStates.update_group_state)
 
 
-@router.message(UserMailingGroupsStates.UpdateGroupState)
+@router.message(UserMailingGroupsStates.update_group_state)
 async def update_user_data(message: Message, state: FSMContext, config: BotConfig):
     data = await state.get_data()
     user_id = data['user_id']
@@ -105,6 +105,6 @@ async def update_user_data(message: Message, state: FSMContext, config: BotConfi
         await config.add_user_to_mailing_group(user_id, new_group)
         await message.answer(text=f'Пользователь успешно добавлен в {new_group}', reply_markup=HOME_KB)
     else:
-        await config.drop_user_mailing_group(user_id, new_group)
+        await config.remove_user_form_mailing_group(user_id, new_group)
         await message.answer(text=f'Пользователь успешно удален из {new_group}', reply_markup=HOME_KB)
     await state.clear()

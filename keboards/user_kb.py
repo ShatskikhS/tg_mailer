@@ -20,7 +20,7 @@ def get_hone_usr_kb(user: UserType) -> ReplyKeyboardMarkup:
         sub_text = 'Подписаться на рассылку'
     return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=sub_text)],
                                          [KeyboardButton(text='Написать администраторам')],
-                                         KeyboardButton(text='Справка')],
+                                         [KeyboardButton(text='Справка')]],
                                resize_keyboard=True,
                                one_time_keyboard=True,
                                input_field_placeholder='Click button to continue')

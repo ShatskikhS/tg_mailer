@@ -2,19 +2,21 @@ from aiogram.fsm.state import StatesGroup, State
 
 
 class NewUserStates(StatesGroup):
-    HomeState = State()
-    GetInfo = State()
-    ConfirmInfo = State()
+    home_state = State()
+    get_info = State()
+    confirm_info = State()
+    add_to_group = State()
+    chose_group = State()
 
 
 class UserStates(StatesGroup):
-    Feedback = State()
+    feedback = State()
 
 
 class MailingStates(StatesGroup):
-    MailingStart = State()
-    PoolOptions = State()
-    GetMessageText = State()
+    mailing_start = State()
+    pool_options = State()
+    get_message_text = State()
 
 
 class ApplicationsStates(StatesGroup):
@@ -22,23 +24,23 @@ class ApplicationsStates(StatesGroup):
 
 
 class UserMailingGroupsStates(StatesGroup):
-    HomeState = State()
-    ChoseUsersState = State()
-    ChoseGroupState = State()
-    ChoseNotGroupState = State()
-    ChoseOutOfGroupState = State()
-    UpdateGroupState = State()
+    home_state = State()
+    chose_users_state = State()
+    chose_group_state = State()
+    chose_not_group_state = State()
+    chose_out_of_group_state = State()
+    update_group_state = State()
 
 
 class DeveloperStates(StatesGroup):
-    UserManagement = State()
-    ChoseUserRoleState = State()
-    ChoseNewRolesState = State()
-    ChoseUserToDeleteState = State()
-    DeleteUserState = State()
-    MailingManagementState = State()
-    GetGroupNameState = State()
-    GetGroupDescriptionState = State()
-    AddGroupState = State()
-    ChoseGroupToDeleteState = State()
-    ConfirmGroupToDeleteState = State()
+    user_management = State()
+    chose_user_role_state = State()
+    chose_new_roles_state = State()
+    chose_user_to_delete_state = State()
+    delete_user_state = State()
+    mailing_management_state = State()
+    get_group_name_state = State()
+    get_group_description_state = State()
+    add_group_state = State()
+    chose_group_to_delete_state = State()
+    confirm_group_to_delete_state = State()

@@ -37,7 +37,6 @@ async def join_requests(message: Message, state: FSMContext, config: BotConfig, 
                 user_number = prev_user_number
                 u_info = await config.get_user_info(user_id=prev_user_number)
                 if u_info is not None:
-                    await config.remove_user_info(user_id=prev_user_number)
                     applicant_ids.remove(prev_id)
                 await config.remove_user_by_id(user_id=prev_id)
                 await message.answer(text=APPLICANT_NOTICE_DECLINED)
@@ -45,6 +44,7 @@ async def join_requests(message: Message, state: FSMContext, config: BotConfig, 
             elif message.text == 'Одобрить':
                 user_number = prev_user_number
                 await config.alter_user_role(user_id=prev_id, new_role=ChatRole.USER)
+                await config.change_subscriptions(user_id=prev_id)
                 applicant_ids.remove(prev_id)
                 await message.answer(text=APPLICANT_NOTICE_APPROVED)
                 await bot.send_message(chat_id=prev_id, text=APPLICANT_APPROVED, reply_markup=HOME_KB)

@@ -13,7 +13,7 @@ from fsms import UserStates
 router = Router()
 
 @router.message(F.text == 'Домой', RoleFilter(role=ChatRole.USER))
-@router.message(F.text == 'Назад', UserStates.Feedback)
+@router.message(F.text == 'Назад', UserStates.feedback)
 async def home(message: Message, config: BotConfig, state: FSMContext) -> None:
     await state.clear()
     await message.answer(text=texts.HOME,
@@ -28,10 +28,10 @@ async def help_msg(message: Message, config: BotConfig) -> None:
 @router.message(F.text == 'Написать администраторам', RoleFilter(role=ChatRole.USER))
 async def user_feedback(message: Message, state: FSMContext) -> None:
     await message.answer(text=texts.FEEDBACK, reply_markup=kb.FEEDBACK_KB)
-    await state.set_state(UserStates.Feedback)
+    await state.set_state(UserStates.feedback)
 
 
-@router.message(UserStates.Feedback)
+@router.message(UserStates.feedback)
 async def send_feedback(message: Message, state: FSMContext, config: BotConfig, bot: Bot) -> None:
     current_user = config.ger_user_by_id(user_id=message.from_user.id)
     mailing_ids = config.get_ids_by_role(ChatRole.DEVELOPER)

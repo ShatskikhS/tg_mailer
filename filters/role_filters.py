@@ -17,7 +17,10 @@ class RoleFilter(BaseFilter):
         self.role = role
 
     async def __call__(self, message: Message, config: BotConfig):
-        user_role = config.get_role_by_id(user_id=message.from_user.id)
+        user_id = message.from_user.id
+        if user_id not in config.users.keys():
+            return False
+        user_role = config.get_role_by_id(user_id=user_id)
         if isinstance(self.role, ChatRole):
             return self.role == user_role
         else:

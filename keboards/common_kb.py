@@ -64,6 +64,20 @@ CONTINUE_BACK_HOME_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='На
                                             input_field_placeholder='Click button to continue'
                                             )
 
+ADD_TO_GROUP_HOME_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Добавить в группу')],
+                                                     [KeyboardButton(text='Домой')]],
+                                           resize_keyboard=True,
+                                           one_time_keyboard=True,
+                                           input_field_placeholder='Click button to continue'
+                                           )
+
+EDIT_GROUPS_HOME = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Редактировать группы пользователя')],
+                                                 [KeyboardButton(text='Домой')]],
+                                       resize_keyboard=True,
+                                       one_time_keyboard=True,
+                                       input_field_placeholder='Click button to continue'
+                                       )
+
 
 def get_applicants_kb(back_button: bool = True, front_button: bool = True) -> ReplyKeyboardMarkup:
     nav_buttons = [KeyboardButton(text='Предыдущее'), KeyboardButton(text='Следующее')]
@@ -91,13 +105,14 @@ def groups_home_kb(btn_names:List[str]) -> ReplyKeyboardMarkup:
                                input_field_placeholder='Click button to continue')
 
 
-def edit_groups_kb(user: UserType, all_groups: List[str]) -> ReplyKeyboardMarkup:
+def edit_groups_kb(user: UserType, all_groups: List[str], back: bool = True) -> ReplyKeyboardMarkup:
     line1 = [KeyboardButton(text=f'Добавить в {group}') for group in all_groups if group not in user.groups]
     line2 = [KeyboardButton(text=f'Удалить из {group}') for group in user.groups]
-    return ReplyKeyboardMarkup(keyboard=[line1,
-                                         line2,
-                                         [KeyboardButton(text='Назад')],
-                                         [KeyboardButton(text='Домой')]],
+    kb = [line1, line2]
+    if back:
+        kb.append([KeyboardButton(text='Назад')])
+    kb.append([KeyboardButton(text='Домой')])
+    return ReplyKeyboardMarkup(keyboard=kb,
                                resize_keyboard=True,
                                one_time_keyboard=True,
                                input_field_placeholder='Click button to continue'

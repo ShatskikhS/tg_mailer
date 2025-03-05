@@ -47,7 +47,6 @@ class UserType:
                 'username': self.username,
                 'first_name': self.first_name,
                 'last_name': self.last_name,
-                'is_bot': int(self.is_bot),
                 'is_subscribed': int(self.is_subscribed),
                 'role': self.role.value,
                 'last_update': self.last_update}
@@ -77,7 +76,7 @@ class UserType:
             result += f'Имя: {self.first_name}\n'
         if self.last_name:
             result += f'Фамилия: {self.last_name}\n'
-        result += f'Текущая роль: {self.role}\n'
+        result += f'Текущая роль: {self.role.value}\n'
         result += f'Текущие группы: {groups_str}\n'
         result += f'Last update: {self.last_update.strftime(DATETIME_FORMAT)} CET (UTC+01:00).'
 

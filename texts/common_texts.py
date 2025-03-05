@@ -27,6 +27,8 @@ ID_IS_TEXT = 'Ошибка: Неверно введен ID пользовате�
 
 ID_NOT_IN_LIST = 'Ошибка: Неверно введен ID пользователя. ID пользователя должен присутствовать в списке'
 
+APPLICANT_APPROVED = 'Заявитель одобрен. Нажмите "Добавить в группу" для добавления пользователя в группу рассылки или "Домой" для возврата в домашнее меню.'
+
 def get_input_text(groups: List[str], nuber_users: int) -> str:
     group_text = ', '.join(groups)
     return (f'Сообщение будет отправлено группам: {group_text}\n'
@@ -43,3 +45,11 @@ def mailing_result(mailed_number: int, mailing_fails: List[str]) -> str:
         result_text += f'\n{fails_text}'
 
     return result_text
+
+
+def applicant_declined_text(amin_name: str, date: str) -> str:
+    return f'Данная заявка была отклонена администратором {amin_name}, {date} CET'
+
+
+def applicant_approved_text(amin_name: str, date: str) -> str:
+    return f'Данная заявка была одобрена администратором {amin_name}, {date} CET'

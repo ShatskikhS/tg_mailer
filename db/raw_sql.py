@@ -1,41 +1,17 @@
 from typing import Dict, List
+from datetime import datetime
 
 from sqlalchemy.ext.asyncio import create_async_engine
 
 from config_data import DATABASE_URL
 from project_types.enum_types import ChatRole
 from project_types.user_type import UserType
-from db.sql_clauses import (CREATE_MAILING_GROUPS_TABLE,
-                            CREATE_CHAT_ROLES_TABLE,
-                            CREATE_USERS_TABLE,
-                            CREATE_USERS_MAILING_GROUPS_TABLE,
-                            ADD_GROUP_NAME,
-                            ADD_GROUP_NAME_DESCRIPTION,
-                            DELETE_GROUP,
-                            SELECT_GROUP_DESCRIPTION,
-                            ADD_CHAT_ROLE_DESCRIPTION,
-                            ADD_CHAT_ROLE,
-                            SELECT_ROLE_DESCRIPTION,
-                            ADD_USER,
-                            ADD_USER_TO_MAILING_GROUP,
-                            SELECT_ROLES_NUMBER,
-                            UPDATE_SUBSCRIPTION,
-                            SELECT_ALL_USERS,
-                            SELECT_USER_GROUPS,
-                            SELECT_USER_BY_ID,
-                            REMOVE_USER_FROM_MAILING_GROUP,
-                            DELETE_USER,
-                            UPDATE_USER_ROLE,
-                            SELECT_ALL_MAILING_GROUPS,
-                            CREATE_USER_INFOS_TABLE,
-                            ADD_USER_INFO,
-                            GET_USER_INFO,
-                            DELETE_USER_INFO)
+from db.sql_clauses import *
 
 
 class RawSQL:
     def __init__(self, url: str = DATABASE_URL):
-        self.engine = create_async_engine(url, echo=False)
+        self.engine = create_async_engine(url, echo=True)
 
     async def init_db (self) -> None:
         async with self.engine.begin() as conn:
@@ -43,7 +19,8 @@ class RawSQL:
             await conn.execute(CREATE_CHAT_ROLES_TABLE)
             await conn.execute(CREATE_USERS_TABLE)
             await conn.execute(CREATE_USERS_MAILING_GROUPS_TABLE)
-            await conn.execute(CREATE_USER_INFOS_TABLE)
+            await conn.execute(CREATE_APPLICATIONS_TABLE)
+            await conn.execute(CREATE_APPLICANTS_NOTIFIED_ADMINS_TABLE)
             result = await conn.execute(SELECT_ROLES_NUMBER)
             if result.scalar() == 0:
                 for role in ChatRole:
@@ -54,18 +31,47 @@ class RawSQL:
             data = await conn.execute(SELECT_ALL_MAILING_GROUPS)
         return {row[0]: row[1] for row in data.all()}
 
-    async def add_user_info(self, user_id: int, user_info: str) -> None:
+    async def add_applicant(self, applicant_id: int, user_info: str | None = None) -> None:
         async with self.engine.begin() as conn:
-            await conn.execute(ADD_USER_INFO, {'user_id': user_id, 'user_info': user_info})
+            if user_info is not None:
+                await conn.execute(ADD_APPLICATION_INFO, {'applicant_id': applicant_id, 'applicant_info': user_info})
+            else:
+                await conn.execute(ADD_APPLICATION, {'applicant_id': applicant_id})
+
+    async def close_application(self, applicant_id: int, admin_id: int) -> None:
+        async with self.engine.begin() as conn:
+            await conn.execute(CLOSE_APPLICATION, {'applicant_id': applicant_id,
+                                                   'admin_id': admin_id,
+                                                   'close_date': datetime.now()})
+
+    async def add_notified_admin(self, applicant_id: int, admin_id: int, message_id: int) -> None:
+        async with self.engine.begin() as conn:
+            await conn.execute(ADD_NOTIFIED_ADMIN, {'applicant_id': applicant_id,
+                                                    'admin_id': admin_id,
+                                                    'message_id': message_id})
+
+    async def get_notified_admins(self, applicant_id: int) -> List[int]:
+        async with self.engine.begin() as conn:
+            result = await conn.execute(GET_NOTIFIED_ADMINS, {'applicant_id': applicant_id})
+        return list(result.scalars())
+
+    async def get_application(self, applicant_id: int):
+        async with self.engine.begin() as conn:
+            row = await conn.execute(GET_APPLICATION, {'applicant_id': applicant_id})
+            return row.one()
+
+    async def delete_notified_admins(self, applicant_id: int) -> None:
+        async with self.engine.begin() as conn:
+            await conn.execute(DELETE_NOTIFIED_ADMINS, {'applicant_id': applicant_id})
+
+
+
 
     async def get_user_info(self, user_id: int) -> str:
         async with self.engine.begin() as conn:
             result = await conn.execute(GET_USER_INFO, {'user_id': user_id})
         return result.scalar()
 
-    async def delete_user_info(self, user_id: int) -> None:
-        async with self.engine.begin() as conn:
-            await conn.execute(DELETE_USER_INFO, {'user_id': user_id})
 
     async def add_mailing_group(self, mailing_group: str, group_description: str | None = None) -> None:
         async with self.engine.begin() as conn:

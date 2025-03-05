@@ -1,5 +1,4 @@
-from sqlalchemy import text
-
+from sqlalchemy import text, TextClause
 
 CREATE_MAILING_GROUPS_TABLE = text("CREATE TABLE IF NOT EXISTS mailing_groups ("
                                    "group_name VARCHAR PRIMARY KEY, "
@@ -28,18 +27,48 @@ CREATE_USERS_MAILING_GROUPS_TABLE = text('CREATE TABLE IF NOT EXISTS users_maili
                                          'FOREIGN KEY (user_id) REFERENCES users(user_id),'
                                          'FOREIGN KEY (group_name) REFERENCES mailing_groups(group_name))')
 
-CREATE_USER_INFOS_TABLE = text("CREATE TABLE IF NOT EXISTS user_infos ("
-                               "user_id INTEGER PRIMARY KEY, "
-                               "user_info TEXT, "
-                               "FOREIGN KEY (user_id) REFERENCES users(user_id))")
+CREATE_APPLICATIONS_TABLE: TextClause = text("CREATE TABLE IF NOT EXISTS applications ( "
+                                             "id INTEGER PRIMARY KEY AUTOINCREMENT , "
+                                             "applicant_id INTEGER NOT NULL , "
+                                             "applicant_info TEXT, "
+                                             "acted_by INTEGER, "
+                                             "close_date DATETIME, "
+                                             "FOREIGN KEY (applicant_id) REFERENCES users(user_id))")
 
-ADD_USER_INFO = text('INSERT INTO user_infos(user_id, user_info) VALUES (:user_id, :user_info)')
+CREATE_APPLICANTS_NOTIFIED_ADMINS_TABLE = text('CREATE TABLE IF NOT EXISTS applicants_notified_admins ( '
+                                               'applicant_id INTEGER, admin_id INTEGER, '
+                                               'message_id INTEGER UNIQUE NOT NULL, '
+                                               'PRIMARY KEY (applicant_id, admin_id), '
+                                               'FOREIGN KEY (admin_id) REFERENCES users(user_id), '
+                                               'FOREIGN KEY (applicant_id) REFERENCES applications(applicant_id))')
 
-GET_USER_INFO = text("SELECT user_info FROM user_infos WHERE user_id = :user_id")
+ADD_APPLICATION = text("INSERT INTO applications (applicant_id) VALUES (:applicant_id)")
+
+ADD_APPLICATION_INFO = text("INSERT INTO applications (applicant_id, applicant_info) "
+                            "VALUES (:applicant_id, :applicant_info)")
+
+ADD_NOTIFIED_ADMIN = text("INSERT INTO applicants_notified_admins (applicant_id, admin_id, message_id) "
+                          "VALUES (:applicant_id, :admin_id, :message_id)")
+
+CLOSE_APPLICATION = text("UPDATE applications "
+                         "SET acted_by = :admin_id, close_date = :close_date "
+                         "WHERE applicant_id = :applicant_id")
+
+
+GET_NOTIFIED_ADMINS = text("SELECT admin_id FROM applicants_notified_admins WHERE applicant_id = :applicant_id")
+
+GET_APPLICATION = text("SELECT * FROM applications WHERE applicant_id = :applicant_id ORDER BY id DESC LIMIT 1")
+
+DELETE_NOTIFIED_ADMINS = text("DELETE FROM applicants_notified_admins WHERE applicant_id = :applicant_id")
+
+
+
+
+
+
+GET_USER_INFO = text("SELECT applicant_info FROM applications WHERE applicant_id = :user_id")
 
 UPDATE_USER_INFO = text("UPDATE user_infos SET user_info = :user_info WHERE user_id = :user_id ")
-
-DELETE_USER_INFO = text("DELETE FROM user_infos WHERE user_id = :user_id")
 
 SELECT_GROUPS_NUMBER = text("SELECT count(*) AS mailing_groups_number FROM mailing_groups")
 

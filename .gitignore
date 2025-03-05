@@ -6,3 +6,4 @@ data/
 
 /.env
 /test_db.py
+/identifier.sqlite
