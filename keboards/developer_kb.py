@@ -28,6 +28,16 @@ MAILING_MANAGEMENT_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Уд
                                             )
 
 
+def get_mailing_management_kb(remove: bool = True) -> ReplyKeyboardMarkup:
+    line1 = [KeyboardButton(text='Удалить группу'), KeyboardButton(text='Добавить группу')] if remove else [KeyboardButton(text='Добавить группу')]
+    return ReplyKeyboardMarkup(keyboard=[line1,
+                                         [KeyboardButton(text='Домой')]],
+                               resize_keyboard=True,
+                               one_time_keyboard=True,
+                               input_field_placeholder='Click button to continue'
+                               )
+
+
 def home_developer_kb(user:UserType) -> ReplyKeyboardMarkup:
     if user.is_subscribed:
         sub_text = 'Отписаться от рассылки'

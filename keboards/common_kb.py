@@ -21,7 +21,6 @@ BACK_HOME_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Назад'),
 
 BACK_HOME_TEXT_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Назад'), KeyboardButton(text='Домой')]],
                                    resize_keyboard=True,
-                                   one_time_keyboard=True,
                                    input_field_placeholder="Type here...")
 
 
@@ -54,7 +53,6 @@ USER_GROUPS_HOME_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Все
                                                      KeyboardButton(text='Пользователи не в группе')],
                                                     [KeyboardButton(text='Домой')]],
                                           resize_keyboard=True,
-                                          one_time_keyboard=True,
                                           input_field_placeholder='Click button to continue')
 
 CONTINUE_BACK_HOME_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Назад'), KeyboardButton(text='Продолжить')],
@@ -101,7 +99,6 @@ def groups_home_kb(btn_names:List[str]) -> ReplyKeyboardMarkup:
                                          [KeyboardButton(text='Назад')],
                                          [KeyboardButton(text='Домой')]],
                                resize_keyboard=True,
-                               one_time_keyboard=True,
                                input_field_placeholder='Click button to continue')
 
 

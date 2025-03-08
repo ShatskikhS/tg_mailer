@@ -34,6 +34,9 @@ async def all_users(message: Message, state: FSMContext, config: BotConfig):
         users_list = [user for user in config.users.values() if user.role != ChatRole.APPLICANT]
     else:
         users_list = [user for user in config.users.values() if user.role != ChatRole.APPLICANT and user.groups == []]
+    if not users_list:
+        await message.answer(text='Нет пользователей с заданными параметрами')
+        return
     await message.answer(text=get_users_groups_text(users_list))
     await message.answer(text=CHOSE_USER_TEXT, reply_markup=BACK_HOME_TEXT_KB)
 
@@ -62,6 +65,9 @@ async def group_users(message: Message, state: FSMContext, config: BotConfig):
         users_list = [user for user in config.users.values() if message.text in user.groups]
     else:
         users_list = [user for user in config.users.values() if message.text not in user.groups and user.role != ChatRole.APPLICANT]
+    if not users_list:
+        await message.answer('Нет пользователей с заданными параметрами')
+        return
     await message.answer(text=get_users_groups_text(users_list))
     await message.answer(text=CHOSE_USER_TEXT, reply_markup=BACK_HOME_TEXT_KB)
 
@@ -90,8 +96,8 @@ async def show_user_data(message: Message, state: FSMContext, config: BotConfig)
 
     await message.answer(text=current_user.represent_user_full())
 
-    groups = list(config.all_groups.values())
-    await message.answer(text='Выберете действие', reply_markup=edit_groups_kb(user=current_user, all_groups=groups))
+    await message.answer(text='Выберете действие',
+                         reply_markup=edit_groups_kb(user=current_user, all_groups=list(config.all_groups.keys())))
     await state.update_data(user_id=user_id)
     await state.set_state(UserMailingGroupsStates.update_group_state)
 
@@ -100,7 +106,7 @@ async def show_user_data(message: Message, state: FSMContext, config: BotConfig)
 async def update_user_data(message: Message, state: FSMContext, config: BotConfig):
     data = await state.get_data()
     user_id = data['user_id']
-    new_group = message.text.split()[-1]
+    new_group = message.text.replace('Добавить в ', '').replace('Удалить из ', '')
     if message.text.startswith('Добавить'):
         await config.add_user_to_mailing_group(user_id, new_group)
         await message.answer(text=f'Пользователь успешно добавлен в {new_group}', reply_markup=HOME_KB)

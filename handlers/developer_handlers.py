@@ -8,7 +8,7 @@ from aiogram.types import Message, FSInputFile
 from filters.role_filters import RoleFilter
 from project_types.enum_types import ChatRole
 from project_types.bot_config import BotConfig
-from keboards.developer_kb import home_developer_kb, update_roles_kb, USER_MANAGEMENT_KB, HOME_LIST_USERS_KB, MAILING_MANAGEMENT_KB, groups_to_delete_kb
+from keboards.developer_kb import home_developer_kb, update_roles_kb, get_mailing_management_kb, USER_MANAGEMENT_KB, HOME_LIST_USERS_KB, groups_to_delete_kb
 from keboards.common_kb import BACK_HOME_TEXT_KB, BACK_HOME_KB, Y_N_KB, HOME_KB, CONTINUE_BACK_HOME_KB
 from texts.text_methods import split_message
 from texts.common_texts import HOME, ID_IS_TEXT, ID_NOT_IN_LIST, CHOSE_USER_TEXT
@@ -148,7 +148,8 @@ async def generate_xlsx(message: Message, config: BotConfig):
 @router.message(F.text == 'Назад', DeveloperStates.get_group_name_state)
 @router.message(F.text == 'Назад', DeveloperStates.chose_group_to_delete_state)
 async def mailing_management(message: Message, state: FSMContext, config: BotConfig):
-    await message.answer(text=mailing_management_text(config=config), reply_markup=MAILING_MANAGEMENT_KB)
+    await message.answer(text=mailing_management_text(config=config),
+                         reply_markup=get_mailing_management_kb(remove=bool(config.all_groups)))
     await state.set_state(DeveloperStates.mailing_management_state)
 
 

@@ -28,6 +28,9 @@ class RawSQL:
 
     async def get_all_mailing_groups(self) -> Dict[str, str]:
         async with self.engine.connect() as conn:
+            is_exists = await conn.execute(EXISTS_MAILING_GROUPS)
+            if is_exists.scalar() == 0:
+                return {}
             data = await conn.execute(SELECT_ALL_MAILING_GROUPS)
         return {row[0]: row[1] for row in data.all()}
 
@@ -64,14 +67,10 @@ class RawSQL:
         async with self.engine.begin() as conn:
             await conn.execute(DELETE_NOTIFIED_ADMINS, {'applicant_id': applicant_id})
 
-
-
-
     async def get_user_info(self, user_id: int) -> str:
         async with self.engine.begin() as conn:
             result = await conn.execute(GET_USER_INFO, {'user_id': user_id})
         return result.scalar()
-
 
     async def add_mailing_group(self, mailing_group: str, group_description: str | None = None) -> None:
         async with self.engine.begin() as conn:
@@ -84,11 +83,6 @@ class RawSQL:
         async with self.engine.begin() as conn:
             await conn.execute(DELETE_GROUP, {'group_name': mailing_group})
 
-    async def get_group_description(self, mailing_group: str) -> str:
-        async with self.engine.begin() as conn:
-            result = await conn.execute(SELECT_GROUP_DESCRIPTION, {'group_name': mailing_group})
-        return result.scalar()
-
     async def add_chat_role(self, chat_role: ChatRole, role_description: str | None = None)  -> None:
         async with self.engine.begin() as conn:
             if role_description is None:
@@ -96,11 +90,6 @@ class RawSQL:
             else:
                 await conn.execute(ADD_CHAT_ROLE_DESCRIPTION,
                                    {'chat_role': chat_role.value, 'role_description': role_description})
-
-    async def get_chat_role_description(self, chat_role: ChatRole) -> str:
-        async with self.engine.begin() as conn:
-            result = conn.execute(SELECT_ROLE_DESCRIPTION, {'chat_role': chat_role.value})
-        return result.scalar()
 
     async def add_user_to_mailing_group(self, user_id: int, mailing_group: str):
         async with self.engine.begin() as conn:
@@ -125,13 +114,6 @@ class RawSQL:
             groups = await self.get_user_groups(user_id)
             user.groups = groups
         return all_users
-
-    async def get_user_by_id(self, user_id: int) -> UserType:
-        async with self.engine.begin() as conn:
-            result = await conn.execute(SELECT_USER_BY_ID, {'user_id': user_id})
-        user = UserType.from_dict(data=next(result.mappings()))
-        user.groups = await self.get_user_groups(user_id)
-        return user
 
     async def get_user_groups(self, user_id: int)-> List[str]:
         async with self.engine.begin() as conn:

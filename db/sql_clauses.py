@@ -120,3 +120,5 @@ DELETE_USER = text("DELETE FROM users WHERE user_id = :user_id")
 UPDATE_USER_ROLE = text("UPDATE users SET role_name = :role_name WHERE user_id = :user_id")
 
 SELECT_ALL_MAILING_GROUPS = text("SELECT * FROM mailing_groups")
+
+EXISTS_MAILING_GROUPS = text("SELECT exists( SELECT type FROM sqlite_master WHERE name = 'mailing_groups') AS table_exists;")

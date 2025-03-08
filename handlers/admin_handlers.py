@@ -10,7 +10,7 @@ from keboards.common_kb import HOME_KB, ADD_TO_GROUP_HOME_KB, EDIT_GROUPS_HOME, 
 from keboards.inline_kb import NewUserNotice
 from project_types.bot_config import BotConfig
 from project_types.enum_types import ChatRole, NoticeAction
-from texts.common_texts import (HOME, APPLICANT_NOTICE_DECLINED, APPLICANT_NOTICE_POSTPONED, APPLICANT_APPROVED,
+from texts.common_texts import (HOME, APPLICANT_NOTICE_DECLINED, APPLICANT_NOTICE_POSTPONED, NEW_APPLICANT_APPROVED,
                                 applicant_declined_text, applicant_approved_text)
 from texts.new_user import APPLICANT_APPROVED, APPLICANT_DECLINED
 
@@ -39,7 +39,7 @@ async def new_app_notice(callback_query: CallbackQuery, callback_data: NewUserNo
 
             # Offer admin to add new user to mailing groups
             await bot.send_message(chat_id=admin.id,
-                                   text= APPLICANT_APPROVED,
+                                   text= NEW_APPLICANT_APPROVED,
                                    reply_markup=ADD_TO_GROUP_HOME_KB)
             await state.set_state(NewUserStates.add_to_group)
             await state.update_data(user_id=user.id)
