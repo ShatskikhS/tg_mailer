@@ -1,6 +1,7 @@
 from typing import List
 
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 from project_types.user_type import UserType
 
@@ -93,24 +94,26 @@ def get_applicants_kb(back_button: bool = True, front_button: bool = True) -> Re
                                one_time_keyboard=True,
                                input_field_placeholder='Click button to continue')
 
-def groups_home_kb(btn_names:List[str]) -> ReplyKeyboardMarkup:
-    line1 = [KeyboardButton(text=name) for name in btn_names]
-    return ReplyKeyboardMarkup(keyboard=[line1,
-                                         [KeyboardButton(text='Назад')],
-                                         [KeyboardButton(text='Домой')]],
-                               resize_keyboard=True,
-                               input_field_placeholder='Click button to continue')
+def groups_builder_kb(btn_names: List[str]) -> ReplyKeyboardMarkup:
+    builder = ReplyKeyboardBuilder()
+    for btn_name in btn_names:
+        builder.add(KeyboardButton(text=btn_name))
+    builder.adjust(3)
+    builder.row(KeyboardButton(text='Назад'))
+    builder.row(KeyboardButton(text='Домой'))
+    return builder.as_markup(resize_keyboard=True, input_field_placeholder='Click button to continue')
 
 
-def edit_groups_kb(user: UserType, all_groups: List[str], back: bool = True) -> ReplyKeyboardMarkup:
-    line1 = [KeyboardButton(text=f'Добавить в {group}') for group in all_groups if group not in user.groups]
-    line2 = [KeyboardButton(text=f'Удалить из {group}') for group in user.groups]
-    kb = [line1, line2]
+def edit_groups_builder_kb(user: UserType, all_groups: List[str], back: bool = True) -> ReplyKeyboardMarkup:
+    builder = ReplyKeyboardBuilder()
+    [builder.button(text=f'Добавить в {group}') for group in all_groups if group not in user.groups]
+    builder.adjust(3)
+    builder2 = ReplyKeyboardBuilder()
+    [builder2.button(text=f'Удалить из {group}') for group in user.groups]
+    builder2.adjust(3)
+    builder.attach(builder2)
     if back:
-        kb.append([KeyboardButton(text='Назад')])
-    kb.append([KeyboardButton(text='Домой')])
-    return ReplyKeyboardMarkup(keyboard=kb,
-                               resize_keyboard=True,
-                               one_time_keyboard=True,
-                               input_field_placeholder='Click button to continue'
-                               )
+        builder.row(KeyboardButton(text='Назад'))
+    builder.row(KeyboardButton(text='Домой'))
+    return builder.as_markup(resize_keyboard=True, input_field_placeholder='Click button to continue')
+

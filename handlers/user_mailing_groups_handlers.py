@@ -11,14 +11,14 @@ from project_types.enum_types import ChatRole
 from fsms import UserMailingGroupsStates, DeveloperStates
 from texts.common_texts import USER_GROUPS_HOME_TEXT, CHOSE_USER_TEXT, ID_IS_TEXT, ID_NOT_IN_LIST
 from texts.text_methods import get_users_groups_text
-from keboards.common_kb import USER_GROUPS_HOME_KB, BACK_HOME_TEXT_KB, HOME_KB, groups_home_kb, edit_groups_kb
+from keboards.common_kb import USER_GROUPS_HOME_KB, BACK_HOME_TEXT_KB, HOME_KB, groups_builder_kb, edit_groups_builder_kb
 
 
 router = Router()
 
 
 @router.message(F.text == 'Управление пользовательскими группами', RoleFilter(ChatRole.ADMIN))
-@router.message(F.text == 'Изменить группу пользователя', DeveloperStates.user_management)
+@router.message(F.text == 'Изменить группу', DeveloperStates.user_management)
 @router.message(F.text == 'Назад', UserMailingGroupsStates.chose_group_state)
 @router.message(F.text == 'Назад', UserMailingGroupsStates.chose_not_group_state)
 @router.message(F.text == 'Назад', UserMailingGroupsStates.chose_users_state)
@@ -48,7 +48,7 @@ async def all_users(message: Message, state: FSMContext, config: BotConfig):
 @router.message(F.text == 'Назад', UserMailingGroupsStates.chose_users_state)
 async def chose_group(message: Message, state: FSMContext, config: BotConfig):
     line1_names = list(config.all_groups.keys())
-    await message.answer(text='Выберите группу', reply_markup=groups_home_kb(line1_names))
+    await message.answer(text='Выберите группу', reply_markup=groups_builder_kb(line1_names))
     if message.text == 'Пользователи группы':
         await state.set_state(UserMailingGroupsStates.chose_group_state)
     else:
@@ -97,7 +97,7 @@ async def show_user_data(message: Message, state: FSMContext, config: BotConfig)
     await message.answer(text=current_user.represent_user_full())
 
     await message.answer(text='Выберете действие',
-                         reply_markup=edit_groups_kb(user=current_user, all_groups=list(config.all_groups.keys())))
+                         reply_markup=edit_groups_builder_kb(user=current_user, all_groups=list(config.all_groups.keys())))
     await state.update_data(user_id=user_id)
     await state.set_state(UserMailingGroupsStates.update_group_state)
 

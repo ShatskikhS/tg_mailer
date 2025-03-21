@@ -6,7 +6,7 @@ from config_data import DATETIME_FORMAT
 from filters.role_filters import RoleFilter
 from fsms import NewUserStates
 from keboards import admin_kb as kb
-from keboards.common_kb import HOME_KB, ADD_TO_GROUP_HOME_KB, EDIT_GROUPS_HOME, edit_groups_kb
+from keboards.common_kb import HOME_KB, ADD_TO_GROUP_HOME_KB, EDIT_GROUPS_HOME, edit_groups_builder_kb
 from keboards.inline_kb import NewUserNotice
 from project_types.bot_config import BotConfig
 from project_types.enum_types import ChatRole, NoticeAction
@@ -66,7 +66,7 @@ async def chose_group(message: Message, config: BotConfig, state: FSMContext):
     data = await state.get_data()
     user = config.users[data['user_id']]
     await message.answer(text='Выберите группу',
-                         reply_markup=edit_groups_kb(user=user, all_groups=list(config.all_groups.keys()), back=False))
+                         reply_markup=edit_groups_builder_kb(user=user, all_groups=list(config.all_groups.keys()), back=False))
     await state.set_state(NewUserStates.chose_group)
 
 
@@ -74,11 +74,20 @@ async def chose_group(message: Message, config: BotConfig, state: FSMContext):
 async def add_user_to_group(message: Message, config: BotConfig, state: FSMContext):
     data = await state.get_data()
     user = config.users[data['user_id']]
-    group = message.text.split(' ')[-1]
-    await config.add_user_to_mailing_group(user.id, group)
-    await message.answer(text=user.represent_user_full())
-    await message.answer(text=f'Пользователь {user.full_name()} успешно добавлен в группу {group}',
-                         reply_markup=EDIT_GROUPS_HOME)
+    group = message.text.replace('Добавить в ', '').replace('Удалить из ', '')
+    if message.text.startswith('Добавить в '):
+        await config.add_user_to_mailing_group(user.id, group)
+        await message.answer(text=user.represent_user_full())
+        await message.answer(text=f'Пользователь {user.full_name()} успешно добавлен в группу {group}',
+                             reply_markup=EDIT_GROUPS_HOME)
+    elif message.text.startswith('Удалить из '):
+        await config.remove_user_form_mailing_group(user_id=user.id, group=group)
+        await message.answer(text=user.represent_user_full())
+        await message.answer(text=f'Пользователь {user.full_name()} удален из группы {group}',
+                             reply_markup=EDIT_GROUPS_HOME)
+    else:
+        await message.answer(text='Воспользуйтесь кнопками 🤦‍♂️')
+        return
     await state.set_state(NewUserStates.add_to_group)
 
 

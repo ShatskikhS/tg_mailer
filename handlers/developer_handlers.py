@@ -1,21 +1,24 @@
 from datetime import datetime
-import aiofiles.os
 
+import aiofiles.os
 from aiogram import Router, F
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, FSInputFile
 
-from filters.role_filters import RoleFilter
-from project_types.enum_types import ChatRole
-from project_types.bot_config import BotConfig
-from keboards.developer_kb import home_developer_kb, update_roles_kb, get_mailing_management_kb, USER_MANAGEMENT_KB, HOME_LIST_USERS_KB, groups_to_delete_kb
-from keboards.common_kb import BACK_HOME_TEXT_KB, BACK_HOME_KB, Y_N_KB, HOME_KB, CONTINUE_BACK_HOME_KB
-from texts.text_methods import split_message
-from texts.common_texts import HOME, ID_IS_TEXT, ID_NOT_IN_LIST, CHOSE_USER_TEXT
-from texts.developer_texts import CHOSE_ACTION, users_list_text, CHOSE_NEW_ROLE, ROLE_HAS_UPDATED, mailing_management_text, INPUT_GROUP_NAME, input_group_description_text, confirm_new_group_data, confirm_group_delete_text
-from fsms import DeveloperStates
 from config_data import DATETIME_FORMAT
-
+from filters.role_filters import RoleFilter
+from fsms import DeveloperStates
+from keboards.common_kb import BACK_HOME_TEXT_KB, BACK_HOME_KB, Y_N_KB, HOME_KB, CONTINUE_BACK_HOME_KB, \
+    groups_builder_kb
+from keboards.developer_kb import home_developer_kb, update_roles_kb, get_mailing_management_kb, USER_MANAGEMENT_KB, \
+    HOME_LIST_USERS_KB
+from project_types.bot_config import BotConfig
+from project_types.enum_types import ChatRole
+from texts.common_texts import HOME, ID_IS_TEXT, ID_NOT_IN_LIST, CHOSE_USER_TEXT
+from texts.developer_texts import CHOSE_ACTION, users_list_text, CHOSE_NEW_ROLE, ROLE_HAS_UPDATED, \
+    mailing_management_text, INPUT_GROUP_NAME, input_group_description_text, confirm_new_group_data, \
+    confirm_group_delete_text
+from texts.text_methods import split_message
 
 router = Router()
 
@@ -27,7 +30,7 @@ async def home(message: Message, state: FSMContext, config: BotConfig):
     await message.answer(text=HOME, reply_markup=home_developer_kb(user=current_user))
 
 
-@router.message(F.text == 'Управление пользователями', RoleFilter(role=ChatRole.DEVELOPER))
+@router.message(F.text == 'Пользователи', RoleFilter(role=ChatRole.DEVELOPER))
 @router.message(F.text == 'Назад', DeveloperStates.chose_user_role_state)
 @router.message(F.text == 'Назад', DeveloperStates.chose_user_to_delete_state)
 async def users_management(message: Message, state: FSMContext):
@@ -37,7 +40,7 @@ async def users_management(message: Message, state: FSMContext):
 
 # ====================== Change ChatRole handlers ======================
 
-@router.message(F.text == 'Изменить роль пользователя', DeveloperStates.user_management)
+@router.message(F.text == 'Изменить роль', DeveloperStates.user_management)
 @router.message(F.text == 'Назад', DeveloperStates.chose_new_roles_state)
 @router.message(F.text == 'К списку пользователей', RoleFilter(role=ChatRole.DEVELOPER))
 async def change_role_users(message: Message, state: FSMContext, config: BotConfig):
@@ -144,7 +147,7 @@ async def generate_xlsx(message: Message, config: BotConfig):
 
 # ====================== Mailing management ======================
 
-@router.message(F.text == 'Управление группами рассылок', RoleFilter(ChatRole.DEVELOPER))
+@router.message(F.text == 'Группы', RoleFilter(ChatRole.DEVELOPER))
 @router.message(F.text == 'Назад', DeveloperStates.get_group_name_state)
 @router.message(F.text == 'Назад', DeveloperStates.chose_group_to_delete_state)
 async def mailing_management(message: Message, state: FSMContext, config: BotConfig):
@@ -199,7 +202,7 @@ async def add_new_group(message: Message, state: FSMContext, config: BotConfig):
 async def print_groups_to_delete(message: Message, state: FSMContext, config: BotConfig):
     await message.answer(text='\n'.join([f'{name}: {description} - {len(config.get_ids_by_mailing_group(name))} участников' for name, description in config.all_groups.items()]))
     await message.answer(text='Выберете группу для удаления',
-                         reply_markup=groups_to_delete_kb(list(config.all_groups.keys())))
+                         reply_markup=groups_builder_kb(list(config.all_groups.keys())))
     await state.set_state(DeveloperStates.chose_group_to_delete_state)
 
 

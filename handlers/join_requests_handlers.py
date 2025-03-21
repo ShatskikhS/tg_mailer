@@ -15,7 +15,7 @@ from fsms import ApplicationsStates
 router = Router()
 
 
-@router.message(F.text == 'Запросы на вступление', RoleFilter(role=[ChatRole.ADMIN, ChatRole.DEVELOPER]))
+@router.message(F.text == 'Запросы', RoleFilter(role=[ChatRole.ADMIN, ChatRole.DEVELOPER]))
 @router.message(F.text == 'Предыдущее', ApplicationsStates.CurrentApplicant)
 @router.message(F.text == 'Следующее', ApplicationsStates.CurrentApplicant)
 @router.message(F.text == 'Отклонить', ApplicationsStates.CurrentApplicant)

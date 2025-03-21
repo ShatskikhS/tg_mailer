@@ -1,0 +1,15 @@
+services:
+  bot:
+    build:
+      dockerfile: ./Dockerfile
+      no_cache: true
+    volumes:
+      - db_data:/app/data
+
+volumes:
+  db_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /srv/bot_mailer_data
