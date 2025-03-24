@@ -104,6 +104,12 @@ class BotConfig:
                 result.append(user.id)
         return result
 
+    def get_mailing_ids(self, groups: List[str]) -> List[int]:
+        result = []
+        for group in groups:
+            result.extend([user.id for user in self.users.values() if user.is_subscribed and not user.is_bot and group in user.groups])
+        return list(set(result))
+
     def get_role_by_id(self, user_id: int) -> ChatRole:
         return self.users[user_id].role
 

@@ -18,9 +18,41 @@ router = Router()
 
 @router.message(F.text == 'Рассылка', RoleFilter(role=[ChatRole.ADMIN, ChatRole.DEVELOPER]))
 @router.message(F.text == 'Назад', MailingStates.get_message_text)
+@router.message(F.text == 'Назад', MailingStates.group_buttons)
 async def mailing_start(message: Message, state: FSMContext):
     await message.answer(text=c_texts.MAILING_START, reply_markup=kb.MAILING_START_KB)
     await state.set_state(MailingStates.mailing_start)
+
+
+@router.message(F.text == 'Выбрать группы', RoleFilter(role=[ChatRole.ADMIN, ChatRole.DEVELOPER]))
+@router.message(~F.text.in_({'Назад', 'Получатели', 'Продолжить', 'Домой'}), MailingStates.group_buttons)
+@router.message(F.text == 'Назад', MailingStates.recipients)
+async def show_groups(message: Message, state: FSMContext, config: BotConfig):
+    data = await state.get_data()
+    groups = data.get('groups') or []
+    current_group = message.text.replace('✅ ', '').replace('⬜ ', '')
+    if current_group in config.all_groups.keys():
+        if current_group in groups:
+            groups.remove(current_group)
+        else:
+            groups.append(current_group)
+
+    for text in split_message(c_texts.chose_groups_text(config, groups)):
+        await message.answer(text=text, reply_markup=kb.mailing_groups_builder_kb(config, groups))
+
+    await state.update_data(groups=groups)
+    await state.set_state(MailingStates.group_buttons)
+
+
+@router.message(F.text == 'Получатели', MailingStates.group_buttons)
+async def show_recipients(message: Message, state: FSMContext, config: BotConfig):
+    data = await state.get_data()
+    groups: List[str] = data['groups']
+    text = c_texts.show_recipients_text(groups, config)
+    msg_texts = split_message(text)
+    for msg_text in msg_texts:
+        await message.answer(text=msg_text, reply_markup=kb.CONTINUE_BACK_HOME_KB)
+    await state.set_state(MailingStates.recipients)
 
 
 @router.message(F.text == 'Выбрать группы для рассылки', MailingStates.mailing_start)
@@ -40,29 +72,32 @@ async def mailing_by_pool(poll_answer: PollAnswer, state: FSMContext, config: Bo
     data = await state.get_data()
     all_poll_options: List[str]  = data['options']
     mailing_options = poll_answer.option_ids
-    per_mailing_ids = []
-    mailing_groups = []
+    mailing_groups: List[str] = []
     for option in mailing_options:
         group_name = all_poll_options[option].split(':')[0]
         mailing_groups.append(group_name)
-        per_mailing_ids.extend(config.get_ids_by_mailing_group(group_name))
-    per_mailing_ids = list(set(per_mailing_ids))
-    mailing_ids = [current_id for current_id in per_mailing_ids if config.users[current_id].is_subscribed and not config.users[current_id].is_bot]
 
-    await state.update_data(mailing_ids=mailing_ids)
+    await state.update_data(groups=mailing_groups)
     await bot.send_message(chat_id=poll_answer.user.id,
-                           text=c_texts.get_input_text(groups=mailing_groups, nuber_users=len(per_mailing_ids)),
+                           text=c_texts.get_input_text(groups=mailing_groups,
+                                                       nuber_users=len(config.get_mailing_ids(mailing_groups))),
                            reply_markup=kb.BACK_HOME_KB)
 
     await state.set_state(MailingStates.get_message_text)
 
 
 @router.message(F.text == 'Отправить всем', MailingStates.mailing_start)
+@router.message(F.text == 'Продолжить', MailingStates.group_buttons)
+@router.message(F.text == 'Продолжить', MailingStates.recipients)
 async def mailing_all(message: Message, state: FSMContext, config: BotConfig):
-    mailing_ids = [user.id for user in config.users.values() if user.is_subscribed and not user.is_bot and user.groups]
-    await state.update_data(mailing_ids=mailing_ids)
-    await message.answer(text=c_texts.get_input_text(groups=list(config.all_groups.keys()),
-                                                     nuber_users=len(mailing_ids)),
+    if message.text == 'Отправить всем':
+        groups = list(config.all_groups.keys())
+        await state.update_data(groups=groups)
+    else:
+        data = await state.get_data()
+        groups = data['groups']
+    await message.answer(text=c_texts.get_input_text(groups=groups,
+                                                     nuber_users=len(config.get_mailing_ids(groups))),
                          reply_markup=kb.BACK_HOME_KB)
 
     await state.set_state(MailingStates.get_message_text)
@@ -71,7 +106,8 @@ async def mailing_all(message: Message, state: FSMContext, config: BotConfig):
 @router.message(MailingStates.get_message_text)
 async def mailing_finish(message: Message, state: FSMContext, config: BotConfig, bot: Bot):
     data = await state.get_data()
-    mailing_ids = data['mailing_ids']
+    groups = data.get('groups')
+    mailing_ids = config.get_mailing_ids(groups)
     mailing_text = message.text
 
     mailed_number = 0

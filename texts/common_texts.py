@@ -1,6 +1,6 @@
 from typing import List
 
-from texts.new_user import NEW_DEVELOPER
+from project_types.bot_config import BotConfig
 
 HOME = 'Вы находитесь в домашнем меню. Для продолжения нажмите кнопку.'
 
@@ -54,3 +54,26 @@ def applicant_declined_text(amin_name: str, date: str) -> str:
 
 def applicant_approved_text(amin_name: str, date: str) -> str:
     return f'Данная заявка была одобрена администратором {amin_name}, {date} CET'
+
+def chose_groups_text(config: BotConfig, chosen_groups: List[str]) -> str:
+    if chosen_groups:
+        result = 'Выбранные группы:\n'
+    else:
+        result = 'Нет выбранных групп.\n'
+    for group in chosen_groups:
+        result += f'{group}: {config.all_groups.get(group) or ""}\n'
+    result += (f'Текущее число получателей {len(config.get_mailing_ids(chosen_groups))}.\n'
+               f'Для выбора групп воспользуйтесь кнопками.\n')
+    if chosen_groups:
+        result += 'Для просмотра потенциальных получателей сообщения нажмите "Получатели"\n'
+    return result
+
+
+def show_recipients_text(groups: List[str], config: BotConfig) -> str:
+    result = 'Получатели сообщения:\n\n'
+    ids = config.get_mailing_ids(groups)
+    if not ids:
+        return 'Получателей не найдено!'
+    for current_id in ids:
+        result += f'{config.users[current_id].full_name()}\n'
+    return result

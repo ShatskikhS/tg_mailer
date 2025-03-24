@@ -4,6 +4,7 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 
 from project_types.user_type import UserType
+from project_types.bot_config import BotConfig
 
 
 PROCEED_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Продолжить')]],
@@ -32,7 +33,8 @@ Y_N_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Нет'), KeyboardB
                              )
 
 MAILING_START_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Отправить всем'),
-                                                  KeyboardButton(text='Выбрать группы для рассылки')],
+                                                  KeyboardButton(text='Выбрать группы для рассылки'),
+                                                  KeyboardButton(text='Выбрать группы')],
                                                  [KeyboardButton(text='Домой')]],
                                        resize_keyboard=True,
                                        one_time_keyboard=True,
@@ -114,6 +116,22 @@ def edit_groups_builder_kb(user: UserType, all_groups: List[str], back: bool = T
     builder.attach(builder2)
     if back:
         builder.row(KeyboardButton(text='Назад'))
+    builder.row(KeyboardButton(text='Домой'))
+    return builder.as_markup(resize_keyboard=True, input_field_placeholder='Click button to continue')
+
+def mailing_groups_builder_kb(config: BotConfig, chosen_groups: List[str]) -> ReplyKeyboardMarkup:
+    builder = ReplyKeyboardBuilder()
+    for group in config.all_groups.keys():
+        text = f'✅ {group}' if group in chosen_groups else f'⬜ {group}'
+        builder.button(text=text)
+    builder.adjust(3)
+    if chosen_groups:
+        builder.row(KeyboardButton(text='Назад'),
+                    KeyboardButton(text='Получатели'),
+                    KeyboardButton(text='Продолжить'))
+    else:
+        builder.row(KeyboardButton(text='Назад'),
+                    KeyboardButton(text='Продолжить'))
     builder.row(KeyboardButton(text='Домой'))
     return builder.as_markup(resize_keyboard=True, input_field_placeholder='Click button to continue')
 

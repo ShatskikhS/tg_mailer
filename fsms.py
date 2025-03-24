@@ -17,6 +17,8 @@ class MailingStates(StatesGroup):
     mailing_start = State()
     pool_options = State()
     get_message_text = State()
+    group_buttons = State()
+    recipients = State()
 
 
 class ApplicationsStates(StatesGroup):
