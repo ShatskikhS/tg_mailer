@@ -33,7 +33,6 @@ Y_N_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Нет'), KeyboardB
                              )
 
 MAILING_START_KB = ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text='Отправить всем'),
-                                                  KeyboardButton(text='Выбрать группы для рассылки'),
                                                   KeyboardButton(text='Выбрать группы')],
                                                  [KeyboardButton(text='Домой')]],
                                        resize_keyboard=True,

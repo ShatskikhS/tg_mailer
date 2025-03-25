@@ -55,6 +55,7 @@ async def show_recipients(message: Message, state: FSMContext, config: BotConfig
     await state.set_state(MailingStates.recipients)
 
 
+# Unused method
 @router.message(F.text == 'Выбрать группы для рассылки', MailingStates.mailing_start)
 async def chose_groups(message: Message, state: FSMContext, config: BotConfig):
     options = [f"{group_name}: {group_description}" for group_name, group_description in config.all_groups.items()]
@@ -67,6 +68,7 @@ async def chose_groups(message: Message, state: FSMContext, config: BotConfig):
     await state.set_state(MailingStates.pool_options)
 
 
+# Unused method
 @router.poll_answer(MailingStates.pool_options)
 async def mailing_by_pool(poll_answer: PollAnswer, state: FSMContext, config: BotConfig, bot: Bot):
     data = await state.get_data()
