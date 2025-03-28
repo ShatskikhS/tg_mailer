@@ -2,10 +2,10 @@ from config_data import COMMUNITY_NAME
 from project_types.user_type import UserType
 
 
-NEW_USER_GREETINGS = (f'Вас приветствует бот новостной рассылки {COMMUNITY_NAME}!'
-                      f'Для того чтобы подписаться на рассылку нажмите "Продолжить"')
+NEW_USER_GREETINGS = (f'Вас приветствует бот новостной рассылки {COMMUNITY_NAME}!\n'
+                      f'Для того чтобы подать заявку на вступление нажмите "Продолжить"')
 
-APPLICATION_ACCEPTED = (f'Ваша заявка на подписку на рассылку сообщества {COMMUNITY_NAME}!'
+APPLICATION_ACCEPTED = (f'Ваша заявка на подписку на рассылку сообщества {COMMUNITY_NAME} '
                         f'передана администраторам. После того как заявка будет рассмотрена '
                         f'вы получите уведомление в этом чате.')
 

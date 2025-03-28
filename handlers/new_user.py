@@ -51,7 +51,7 @@ async def confirm_info(message: Message, state: FSMContext) -> None:
 @router.message(F.text == 'Отправить', States.confirm_info)
 async def new_user_finish(message: Message, state: FSMContext, config: BotConfig, bot: Bot) -> None:
     state_data = await state.get_data()
-    user_info = state_data.get('user_info')
+    user_info = state_data.get('user_info') or 'Пользователь не предоставил информации о себе'
     new_user = UserType(user=message.from_user, is_subscribed=False)
 
     await config.add_user(user=new_user)
@@ -67,7 +67,7 @@ async def new_user_finish(message: Message, state: FSMContext, config: BotConfig
         for current_text in notification_texts:
             try:
                 current_message = await bot.send_message(chat_id=current_id, text=current_text,
-                                                         reply_markup=get_new_app_notice_kb(user_id=new_user.id, user_info=user_info))
+                                                         reply_markup=get_new_app_notice_kb(new_user.id))
                 admin_ids_msgs[current_id] = current_message.message_id
             except Exception as e:
                 print(f'admins notification to id {current_id} failed: {e}')
