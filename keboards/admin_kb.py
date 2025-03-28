@@ -11,6 +11,6 @@ def get_home_admin_kb(user:UserType) -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text=sub_text)],
                                          [KeyboardButton(text='Рассылка')],
                                          [KeyboardButton(text='Запросы'),
-                                          KeyboardButton(text='Управление пользовательскими группами')]],
+                                          KeyboardButton(text='Группы')]],
                                resize_keyboard=True,
                                input_field_placeholder='Click button to continue')

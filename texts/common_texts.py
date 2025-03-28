@@ -1,6 +1,7 @@
 from typing import List
 
 from project_types.bot_config import BotConfig
+from project_types.enum_types import ChatRole
 
 HOME = 'Вы находитесь в домашнем меню. Для продолжения нажмите кнопку.'
 
@@ -77,3 +78,8 @@ def show_recipients_text(groups: List[str], config: BotConfig) -> str:
     for current_id in ids:
         result += f'{config.users[current_id].full_name()}\n'
     return result
+
+
+def role_updated_text(role: ChatRole) -> str:
+    return (f'Вам предоставлены права {role.value}.\n'
+            f'Для продолжения нажмите "Домой"')

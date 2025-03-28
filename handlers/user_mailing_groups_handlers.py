@@ -17,7 +17,7 @@ from keboards.common_kb import USER_GROUPS_HOME_KB, BACK_HOME_TEXT_KB, HOME_KB, 
 router = Router()
 
 
-@router.message(F.text == 'Управление пользовательскими группами', RoleFilter(ChatRole.ADMIN))
+@router.message(F.text == 'Группы', RoleFilter(ChatRole.ADMIN))
 @router.message(F.text == 'Изменить группу', DeveloperStates.user_management)
 @router.message(F.text == 'Назад', UserMailingGroupsStates.chose_group_state)
 @router.message(F.text == 'Назад', UserMailingGroupsStates.chose_not_group_state)

@@ -1,7 +1,7 @@
 from datetime import datetime
 
 import aiofiles.os
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message, FSInputFile
 
@@ -14,7 +14,7 @@ from keboards.developer_kb import home_developer_kb, update_roles_kb, get_mailin
     HOME_LIST_USERS_KB
 from project_types.bot_config import BotConfig
 from project_types.enum_types import ChatRole
-from texts.common_texts import HOME, ID_IS_TEXT, ID_NOT_IN_LIST, CHOSE_USER_TEXT
+from texts.common_texts import HOME, ID_IS_TEXT, ID_NOT_IN_LIST, CHOSE_USER_TEXT, role_updated_text
 from texts.developer_texts import CHOSE_ACTION, users_list_text, CHOSE_NEW_ROLE, ROLE_HAS_UPDATED, \
     mailing_management_text, INPUT_GROUP_NAME, input_group_description_text, confirm_new_group_data, \
     confirm_group_delete_text
@@ -83,12 +83,14 @@ async def show_user_data(message: Message, state: FSMContext, config: BotConfig)
 
 
 @router.message(DeveloperStates.chose_new_roles_state)
-async def change_role(message: Message, state: FSMContext, config: BotConfig):
+async def change_role(message: Message, state: FSMContext, config: BotConfig, bot: Bot):
     data = await state.get_data()
+    new_role = ChatRole(message.text)
     user_id = data['user_id']
-    await config.alter_user_role(user_id=user_id, new_role=ChatRole(message.text))
+    await config.alter_user_role(user_id=user_id, new_role=new_role)
     await message.answer(text=config.users[user_id].represent_user_full())
     await message.answer(text=ROLE_HAS_UPDATED, reply_markup=HOME_LIST_USERS_KB)
+    await bot.send_message(chat_id=user_id, text=role_updated_text(new_role), reply_markup=HOME_KB)
     await state.clear()
 
 
